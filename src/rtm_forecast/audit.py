@@ -2,6 +2,7 @@
 
 from typing import Any, cast
 
+import numpy as np
 import pandas as pd
 
 from rtm_forecast.ingest import BLOCKS_PER_DAY, RAW_TO_CLEAN, RTM_COLUMNS
@@ -48,6 +49,12 @@ def repeated_runs(clean: pd.DataFrame, column: str, min_length: int) -> list[dic
                 }
             )
     return runs
+
+
+def stale_mask(values: pd.Series, min_length: int) -> np.ndarray:
+    """True for every row inside a run of at least ``min_length`` identical values."""
+    run_id = (values.diff() != 0).cumsum()
+    return (values.groupby(run_id).transform("size") >= min_length).to_numpy()
 
 
 def identical_days(clean: pd.DataFrame, column: str) -> list[list[str]]:

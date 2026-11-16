@@ -16,3 +16,19 @@ data:
   # Chosen from the data: demand repeats exactly for 2 or 3 blocks in 12 places and for 4 to 87 blocks in
   # 16 places. Four blocks (one hour) is the cut-off for calling a run of equal values stale.
   stale_min_blocks: 4
+
+features:
+  features_path: data/processed/features.parquet
+  report_path: reports/feature_report.json
+  # Chosen with src/rtm_forecast/imputation.py (notebook 04): straight-line fill had the lowest error.
+  imputation: linear
+  lags_days: [1, 7]
+  min_history_days: 7
+  # "mask" sets demand to missing where it looks unreliable, "keep" leaves it as published.
+  demand_policy: mask
+  # Demand before this date is treated as unreliable (see the data audit).
+  demand_reliable_from: "2020-10-16"
+  # Candidate scales for the asinh transform. The choice is made on the training part only.
+  asinh_scales: [50, 100, 250, 500, 1000, 2000]
+  asinh_train_days: 90
+  holidays_path: config/holidays.yaml

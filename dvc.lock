@@ -9,12 +9,12 @@ stages:
       size: 701370
     - path: src/rtm_forecast/cli.py
       hash: md5
-      md5: 6c360aba06d93940101b0ae032a84f35
-      size: 1537
+      md5: 4b46f8ebb643d675b074256850df60aa
+      size: 3519
     - path: src/rtm_forecast/config.py
       hash: md5
-      md5: 803301720f1af5c9272c1a98ed842854
-      size: 1090
+      md5: db6ba8fcc2c65596a4db317fe44dc8bc
+      size: 2387
     - path: src/rtm_forecast/contracts.py
       hash: md5
       md5: 32a16b2fb18f22f715ab17b24edb3b6a
@@ -50,10 +50,80 @@ stages:
       size: 486654
     - path: src/rtm_forecast/audit.py
       hash: md5
-      md5: 1fa1f8902a7c8343c0a090289094134d
-      size: 4029
+      md5: 36e51ed9179f2e2612274ab5b0af381b
+      size: 4332
     outs:
     - path: reports/data_quality.json
       hash: md5
       md5: 24b234e2689338f3d1e1f0da0a53b560
       size: 4841
+  features:
+    cmd: python -m rtm_forecast.cli features
+    deps:
+    - path: config/holidays.yaml
+      hash: md5
+      md5: 0dd33231a12036755d59aec28d8ea002
+      size: 1641
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+    - path: src/rtm_forecast/audit.py
+      hash: md5
+      md5: 36e51ed9179f2e2612274ab5b0af381b
+      size: 4332
+    - path: src/rtm_forecast/calendar.py
+      hash: md5
+      md5: 913785e7acaf99cf0e3360c11ecae8cd
+      size: 735
+    - path: src/rtm_forecast/cli.py
+      hash: md5
+      md5: 4b46f8ebb643d675b074256850df60aa
+      size: 3519
+    - path: src/rtm_forecast/config.py
+      hash: md5
+      md5: db6ba8fcc2c65596a4db317fe44dc8bc
+      size: 2387
+    - path: src/rtm_forecast/features.py
+      hash: md5
+      md5: a190ae44796c0a23bf08511b07a6df54
+      size: 5918
+    - path: src/rtm_forecast/imputation.py
+      hash: md5
+      md5: 40009c864abfbb6a06222e65fb597c18
+      size: 4497
+    - path: src/rtm_forecast/transforms.py
+      hash: md5
+      md5: 4156c18127295694c88dc55c3c2ef48b
+      size: 1171
+    params:
+      params.yaml:
+        data.stale_min_blocks: 4
+        features:
+          features_path: data/processed/features.parquet
+          report_path: reports/feature_report.json
+          imputation: linear
+          lags_days:
+          - 1
+          - 7
+          min_history_days: 7
+          demand_policy: mask
+          demand_reliable_from: '2020-10-16'
+          asinh_scales:
+          - 50
+          - 100
+          - 250
+          - 500
+          - 1000
+          - 2000
+          asinh_train_days: 90
+          holidays_path: config/holidays.yaml
+    outs:
+    - path: data/processed/features.parquet
+      hash: md5
+      md5: 7a57d36f0a01d615d86768fa10177edb
+      size: 855198
+    - path: reports/feature_report.json
+      hash: md5
+      md5: a9dcb3a29990c60b014e1ef740908568
+      size: 1068

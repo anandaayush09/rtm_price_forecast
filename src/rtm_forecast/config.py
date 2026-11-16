@@ -1,6 +1,7 @@
 """Pipeline settings read from params.yaml."""
 
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 import yaml
@@ -34,4 +35,38 @@ def load_data_params(path: Path = Path("params.yaml")) -> DataParams:
         demand_min=float(section["demand_min"]),
         demand_max=float(section["demand_max"]),
         stale_min_blocks=int(section["stale_min_blocks"]),
+    )
+
+
+@dataclass(frozen=True)
+class FeatureParams:
+    features_path: Path
+    report_path: Path
+    imputation: str
+    lags_days: tuple[int, ...]
+    min_history_days: int
+    demand_policy: str
+    demand_reliable_from: date
+    asinh_scales: tuple[float, ...]
+    asinh_train_days: int
+    holidays_path: Path
+    stale_min_blocks: int
+
+
+def load_feature_params(path: Path = Path("params.yaml")) -> FeatureParams:
+    with path.open(encoding="utf-8") as handle:
+        settings = yaml.safe_load(handle)
+    section = settings["features"]
+    return FeatureParams(
+        features_path=Path(section["features_path"]),
+        report_path=Path(section["report_path"]),
+        imputation=str(section["imputation"]),
+        lags_days=tuple(int(d) for d in section["lags_days"]),
+        min_history_days=int(section["min_history_days"]),
+        demand_policy=str(section["demand_policy"]),
+        demand_reliable_from=date.fromisoformat(str(section["demand_reliable_from"])),
+        asinh_scales=tuple(float(x) for x in section["asinh_scales"]),
+        asinh_train_days=int(section["asinh_train_days"]),
+        holidays_path=Path(section["holidays_path"]),
+        stale_min_blocks=int(settings["data"]["stale_min_blocks"]),
     )
