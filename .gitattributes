@@ -1,0 +1,4 @@
+* text=auto
+*.csv -text
+*.ipynb -text
+*.parquet binary
