@@ -1,0 +1,59 @@
+schema: '2.0'
+stages:
+  clean:
+    cmd: python -m rtm_forecast.cli clean
+    deps:
+    - path: data/raw/price_data.csv
+      hash: md5
+      md5: b0257dd5e457a6811134d67b9d601443
+      size: 701370
+    - path: src/rtm_forecast/cli.py
+      hash: md5
+      md5: 6c360aba06d93940101b0ae032a84f35
+      size: 1537
+    - path: src/rtm_forecast/config.py
+      hash: md5
+      md5: 803301720f1af5c9272c1a98ed842854
+      size: 1090
+    - path: src/rtm_forecast/contracts.py
+      hash: md5
+      md5: 32a16b2fb18f22f715ab17b24edb3b6a
+      size: 2544
+    - path: src/rtm_forecast/ingest.py
+      hash: md5
+      md5: 2f5e76d73ba7f2f20ae5936c8689d937
+      size: 1758
+    params:
+      params.yaml:
+        data:
+          raw_path: data/raw/price_data.csv
+          clean_path: data/interim/clean.parquet
+          report_path: reports/data_quality.json
+          price_min: 0.0
+          price_max: 20000.0
+          bid_min: 0.0
+          bid_max: 100000.0
+          demand_min: 50000.0
+          demand_max: 300000.0
+          stale_min_blocks: 4
+    outs:
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+  audit:
+    cmd: python -m rtm_forecast.cli audit
+    deps:
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+    - path: src/rtm_forecast/audit.py
+      hash: md5
+      md5: 1fa1f8902a7c8343c0a090289094134d
+      size: 4029
+    outs:
+    - path: reports/data_quality.json
+      hash: md5
+      md5: 24b234e2689338f3d1e1f0da0a53b560
+      size: 4841
