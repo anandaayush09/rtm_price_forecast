@@ -13,8 +13,8 @@ stages:
       size: 3519
     - path: src/rtm_forecast/config.py
       hash: md5
-      md5: db6ba8fcc2c65596a4db317fe44dc8bc
-      size: 2387
+      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
+      size: 3141
     - path: src/rtm_forecast/contracts.py
       hash: md5
       md5: 32a16b2fb18f22f715ab17b24edb3b6a
@@ -82,8 +82,8 @@ stages:
       size: 3519
     - path: src/rtm_forecast/config.py
       hash: md5
-      md5: db6ba8fcc2c65596a4db317fe44dc8bc
-      size: 2387
+      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
+      size: 3141
     - path: src/rtm_forecast/features.py
       hash: md5
       md5: a190ae44796c0a23bf08511b07a6df54

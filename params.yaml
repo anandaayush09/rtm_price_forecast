@@ -32,3 +32,17 @@ features:
   asinh_scales: [50, 100, 250, 500, 1000, 2000]
   asinh_train_days: 90
   holidays_path: config/holidays.yaml
+
+experiment:
+  # Chronological split of the feature days. Test days are the last ones and are not looked at until
+  # every choice has been made on the validation days.
+  validation_days: 14
+  test_days: 21
+  seed: 0
+  # Number of Optuna trials for each tuned model family (same for every family).
+  tuning_trials: 30
+  # While tuning, refit every second validation day to keep the runs short. Final runs refit daily.
+  tuning_refit_every_days: 2
+  # The seasonal-naive reference for rMAE: same block one week earlier.
+  naive_reference: rtm_price_lag7d
+

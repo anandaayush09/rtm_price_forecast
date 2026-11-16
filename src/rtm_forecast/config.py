@@ -70,3 +70,26 @@ def load_feature_params(path: Path = Path("params.yaml")) -> FeatureParams:
         holidays_path=Path(section["holidays_path"]),
         stale_min_blocks=int(settings["data"]["stale_min_blocks"]),
     )
+
+
+@dataclass(frozen=True)
+class ExperimentParams:
+    validation_days: int
+    test_days: int
+    seed: int
+    tuning_trials: int
+    tuning_refit_every_days: int
+    naive_reference: str
+
+
+def load_experiment_params(path: Path = Path("params.yaml")) -> ExperimentParams:
+    with path.open(encoding="utf-8") as handle:
+        section = yaml.safe_load(handle)["experiment"]
+    return ExperimentParams(
+        validation_days=int(section["validation_days"]),
+        test_days=int(section["test_days"]),
+        seed=int(section["seed"]),
+        tuning_trials=int(section["tuning_trials"]),
+        tuning_refit_every_days=int(section["tuning_refit_every_days"]),
+        naive_reference=str(section["naive_reference"]),
+    )

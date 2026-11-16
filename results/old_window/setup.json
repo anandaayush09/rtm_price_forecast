@@ -1,0 +1,6 @@
+{
+  "transform": "asinh",
+  "drop_groups": ["demand_lags"],
+  "demand": "mask",
+  "reason": "Chosen on the 14 validation days with LightGBM at fixed parameters and three seeds (choose_setup.csv). The asinh price transform lowered the mean MAE from 411.40 to 395.01. Leaving demand out gave 389.39, against 395.01 with demand and 395.14 with demand as published. The seed ranges overlap, so this is a judgement: demand does not clearly help in this window and the early demand values are unreliable. Every other input group raised the error when removed, except the two small ones (dam_change, spread_lag) whose removal was within the spread between seeds."
+}
