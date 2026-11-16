@@ -52,7 +52,7 @@ addopts = "-ra"
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
-extend-exclude = ["original", "data"]
+extend-exclude = ["original", "data", "repro2020"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N"]

@@ -1,0 +1,327 @@
+{
+  "summary": {
+    "items": 39,
+    "identical": 27,
+    "different": [
+      {
+        "cell": 86,
+        "what": "Best Params",
+        "original": "Best Params: {'bootstrap': True, 'max_depth': 10, 'max_features': 18, 'min_samples_leaf': 4, 'min_samples_split': 36, 'n_estimators': 700}",
+        "rerun": "Best Params: {'bootstrap': True, 'max_depth': 10, 'max_features': 18, 'min_samples_leaf': 4, 'min_samples_split': 60, 'n_estimators': 700}"
+      },
+      {
+        "cell": 86,
+        "what": "Best Score",
+        "original": "Best Score: 0.5488524548371542",
+        "rerun": "Best Score: 0.5490725803838947"
+      },
+      {
+        "cell": 88,
+        "what": "Average Error",
+        "original": "Average Error: 711.1415 degrees.",
+        "rerun": "Average Error: 710.8982 degrees."
+      },
+      {
+        "cell": 88,
+        "what": "Accuracy",
+        "original": "Accuracy = 84.64%.",
+        "rerun": "Accuracy = 84.67%."
+      },
+      {
+        "cell": 90,
+        "what": "Maximum Error",
+        "original": "Maximum Error of the day =  2598.4647404600973",
+        "rerun": "Maximum Error of the day =  2639.4054007089776"
+      },
+      {
+        "cell": 90,
+        "what": "Minimum Error",
+        "original": "Minimum Error of the day =  15.490902050112709",
+        "rerun": "Minimum Error of the day =  14.428759194326176"
+      },
+      {
+        "cell": 90,
+        "what": "Mean Absolute Error",
+        "original": "Mean Absolute Error of the day =  [707.4508663797345]",
+        "rerun": "Mean Absolute Error of the day =  [715.1394070731258]"
+      },
+      {
+        "cell": 90,
+        "what": "MAPE during 00:00",
+        "original": "MAPE during 00:00-06:00 hrs =  12.912854536744248",
+        "rerun": "MAPE during 00:00-06:00 hrs =  12.716392250408063"
+      },
+      {
+        "cell": 90,
+        "what": "MAPE during 06:00",
+        "original": "MAPE during 06:00-12:00 hrs =  21.037841105083967",
+        "rerun": "MAPE during 06:00-12:00 hrs =  21.570789799009585"
+      },
+      {
+        "cell": 90,
+        "what": "MAPE during 12:00",
+        "original": "MAPE during 12:00-18:00 hrs =  17.95532627563596",
+        "rerun": "MAPE during 12:00-18:00 hrs =  17.92329002366976"
+      },
+      {
+        "cell": 90,
+        "what": "MAPE during 18:00",
+        "original": "MAPE during 18:00-24:00 hrs =  9.382668273659263",
+        "rerun": "MAPE during 18:00-24:00 hrs =  9.461139450931437"
+      },
+      {
+        "cell": 90,
+        "what": "Full Day MAPE",
+        "original": "Full Day MAPE = 15.322172547780857",
+        "rerun": "Full Day MAPE =  15.41790288100471"
+      }
+    ]
+  },
+  "forecast_max_abs_difference": {
+    "XGB": 0.0,
+    "RF": 129.35430567569256
+  },
+  "items": [
+    {
+      "cell": 15,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 17,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 18,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 25,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 27,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 29,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 31,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 36,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 53,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 54,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 55,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 58,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 59,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 64,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 67,
+      "what": "whole printed output",
+      "same": true
+    },
+    {
+      "cell": 72,
+      "what": "Best Params",
+      "same": true,
+      "original": "Best Params: {'colsample_bytree': 0.5, 'gamma': 0.05, 'learning_rate': 0.07, 'max_depth': 4, 'n_estimators': 100}",
+      "rerun": "Best Params: {'colsample_bytree': 0.5, 'gamma': 0.05, 'learning_rate': 0.07, 'max_depth': 4, 'n_estimators': 100}"
+    },
+    {
+      "cell": 72,
+      "what": "Best Score",
+      "same": true,
+      "original": "Best Score: -288694.9656970505",
+      "rerun": "Best Score: -288694.9656970505"
+    },
+    {
+      "cell": 78,
+      "what": "Maximum Error",
+      "same": true,
+      "original": "Maximum Error of the day =  2760.33984375",
+      "rerun": "Maximum Error of the day =  2760.33984375"
+    },
+    {
+      "cell": 78,
+      "what": "Minimum Error",
+      "same": true,
+      "original": "Minimum Error of the day =  7.1733691406248",
+      "rerun": "Minimum Error of the day =  7.1733691406248"
+    },
+    {
+      "cell": 78,
+      "what": "Mean Absolute Error",
+      "same": true,
+      "original": "Mean Absolute Error of the day =  [756.5341135152185]",
+      "rerun": "Mean Absolute Error of the day =  [756.5341135152185]"
+    },
+    {
+      "cell": 78,
+      "what": "Average RTM Price",
+      "same": true,
+      "original": "Average RTM Price =  3989.9464583333333",
+      "rerun": "Average RTM Price =  3989.9464583333333"
+    },
+    {
+      "cell": 78,
+      "what": "MAPE during 00:00",
+      "same": true,
+      "original": "MAPE during 00:00-06:00 hrs =  11.95734952581325",
+      "rerun": "MAPE during 00:00-06:00 hrs =  11.95734952581325"
+    },
+    {
+      "cell": 78,
+      "what": "MAPE during 06:00",
+      "same": true,
+      "original": "MAPE during 06:00-12:00 hrs =  22.49845547564474",
+      "rerun": "MAPE during 06:00-12:00 hrs =  22.49845547564474"
+    },
+    {
+      "cell": 78,
+      "what": "MAPE during 12:00",
+      "same": true,
+      "original": "MAPE during 12:00-18:00 hrs =  22.06340889151566",
+      "rerun": "MAPE during 12:00-18:00 hrs =  22.06340889151566"
+    },
+    {
+      "cell": 78,
+      "what": "MAPE during 18:00",
+      "same": true,
+      "original": "MAPE during 18:00-24:00 hrs =  8.165047204889216",
+      "rerun": "MAPE during 18:00-24:00 hrs =  8.165047204889216"
+    },
+    {
+      "cell": 86,
+      "what": "Best Params",
+      "same": false,
+      "original": "Best Params: {'bootstrap': True, 'max_depth': 10, 'max_features': 18, 'min_samples_leaf': 4, 'min_samples_split': 36, 'n_estimators': 700}",
+      "rerun": "Best Params: {'bootstrap': True, 'max_depth': 10, 'max_features': 18, 'min_samples_leaf': 4, 'min_samples_split': 60, 'n_estimators': 700}"
+    },
+    {
+      "cell": 86,
+      "what": "Best Score",
+      "same": false,
+      "original": "Best Score: 0.5488524548371542",
+      "rerun": "Best Score: 0.5490725803838947"
+    },
+    {
+      "cell": 88,
+      "what": "Average Error",
+      "same": false,
+      "original": "Average Error: 711.1415 degrees.",
+      "rerun": "Average Error: 710.8982 degrees."
+    },
+    {
+      "cell": 88,
+      "what": "Accuracy",
+      "same": false,
+      "original": "Accuracy = 84.64%.",
+      "rerun": "Accuracy = 84.67%."
+    },
+    {
+      "cell": 90,
+      "what": "Maximum Error",
+      "same": false,
+      "original": "Maximum Error of the day =  2598.4647404600973",
+      "rerun": "Maximum Error of the day =  2639.4054007089776"
+    },
+    {
+      "cell": 90,
+      "what": "Minimum Error",
+      "same": false,
+      "original": "Minimum Error of the day =  15.490902050112709",
+      "rerun": "Minimum Error of the day =  14.428759194326176"
+    },
+    {
+      "cell": 90,
+      "what": "Mean Absolute Error",
+      "same": false,
+      "original": "Mean Absolute Error of the day =  [707.4508663797345]",
+      "rerun": "Mean Absolute Error of the day =  [715.1394070731258]"
+    },
+    {
+      "cell": 90,
+      "what": "Average RTM Price",
+      "same": true,
+      "original": "Average RTM Price =  3989.9464583333333",
+      "rerun": "Average RTM Price =  3989.9464583333333"
+    },
+    {
+      "cell": 90,
+      "what": "MAPE during 00:00",
+      "same": false,
+      "original": "MAPE during 00:00-06:00 hrs =  12.912854536744248",
+      "rerun": "MAPE during 00:00-06:00 hrs =  12.716392250408063"
+    },
+    {
+      "cell": 90,
+      "what": "MAPE during 06:00",
+      "same": false,
+      "original": "MAPE during 06:00-12:00 hrs =  21.037841105083967",
+      "rerun": "MAPE during 06:00-12:00 hrs =  21.570789799009585"
+    },
+    {
+      "cell": 90,
+      "what": "MAPE during 12:00",
+      "same": false,
+      "original": "MAPE during 12:00-18:00 hrs =  17.95532627563596",
+      "rerun": "MAPE during 12:00-18:00 hrs =  17.92329002366976"
+    },
+    {
+      "cell": 90,
+      "what": "MAPE during 18:00",
+      "same": false,
+      "original": "MAPE during 18:00-24:00 hrs =  9.382668273659263",
+      "rerun": "MAPE during 18:00-24:00 hrs =  9.461139450931437"
+    },
+    {
+      "cell": 90,
+      "what": "Full Day MAPE",
+      "same": false,
+      "original": "Full Day MAPE = 15.322172547780857",
+      "rerun": "Full Day MAPE =  15.41790288100471"
+    },
+    {
+      "cell": 72,
+      "what": "best XGBoost estimator (n_jobs left out)",
+      "same": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "scheme": "KFold(5), consecutive folds (notebook default)",
+    "best_params": {
+      "colsample_bytree": 0.5,
+      "gamma": 0.05,
+      "learning_rate": 0.07,
+      "max_depth": 4,
+      "n_estimators": 100
+    },
+    "cv_score_neg_mse": -288694.97,
+    "test_day_mape": 16.171,
+    "test_day_mae": 757.87,
+    "seconds": 2912
+  },
+  {
+    "scheme": "TimeSeriesSplit(5), forward chaining",
+    "best_params": {
+      "colsample_bytree": 0.5,
+      "gamma": 0.05,
+      "learning_rate": 0.06,
+      "max_depth": 4,
+      "n_estimators": 100
+    },
+    "cv_score_neg_mse": -310720.03,
+    "test_day_mape": 15.617,
+    "test_day_mae": 730.07,
+    "seconds": 6786
+  }
+]
