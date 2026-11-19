@@ -136,3 +136,16 @@ def missing_blocks(table: pd.DataFrame) -> pd.DataFrame:
     counts = table.groupby("date").size()
     short = counts[counts < BLOCKS_PER_DAY]
     return pd.DataFrame({"blocks": short, "absent": BLOCKS_PER_DAY - short})
+
+
+def mask_empty_blocks(table: pd.DataFrame) -> pd.DataFrame:
+    """Blocks whose bids, volumes and price are all 0 carry no trading data: make them missing.
+
+    ASSUMPTION: a published block with every value 0 means no data, not a price of 0.
+    The flag column ``empty_block`` records which blocks were masked.
+    """
+    out = table.copy()
+    empty = out[list(NUMERIC)].eq(0).all(axis=1)
+    out.loc[empty, list(NUMERIC)] = float("nan")
+    out["empty_block"] = empty
+    return out

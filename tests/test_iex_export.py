@@ -9,9 +9,11 @@ import pytest
 from rtm_forecast.config import DataParams
 from rtm_forecast.contracts import iex_schema
 from rtm_forecast.iex_export import (
+    NUMERIC,
     SchemaDriftError,
     combine,
     load_folder,
+    mask_empty_blocks,
     missing_blocks,
     parse_snapshot,
     read_sheet,
@@ -170,3 +172,16 @@ def test_contract_accepts_a_day_and_rejects_bad_rows(params: DataParams) -> None
     with pytest.raises(pa.errors.SchemaError):
         iex_schema("rtm", params).validate(twice)
     iex_schema("dam", params).validate(parse_snapshot(sheet(market="dam"), "dam"))
+
+
+def test_all_zero_blocks_become_missing_and_only_those() -> None:
+    table = parse_snapshot(sheet(blocks=range(1, 9)), "rtm")
+    table.loc[2:3, list(NUMERIC)] = 0.0  # no data in two blocks
+    table.loc[5, "mcp"] = 0.0  # a real price of 0 with trading volume
+    table.loc[6, ["purchase_bid", "sell_bid", "mcv", "scheduled_volume"]] = 0.0  # price still set
+    out = mask_empty_blocks(table)
+    assert out["empty_block"].tolist() == [False, False, True, True, False, False, False, False]
+    assert out.loc[[2, 3], list(NUMERIC)].isna().all().all()
+    assert out.loc[5, "mcp"] == 0.0 and out.loc[5, "mcv"] == 8755.8
+    assert out.loc[6, "mcp"] == 3000.5
+    assert table.loc[2, "mcp"] == 0.0  # the input is not changed
