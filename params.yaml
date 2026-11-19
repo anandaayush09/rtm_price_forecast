@@ -7,9 +7,10 @@ data:
   price_min: 0.0
   price_max: 20000.0
   # The purchase and selling bid columns look like volumes in MW (values 200 to 27000), not prices.
-  # ASSUMPTION: bid volumes stay between 0 and 100000 MW.
+  # ASSUMPTION: bid volumes stay between 0 and 200000 MW. The 2020 data stayed below 30000 MW; the 2025-26 RTM data reaches
+  # 139317.3 MW. No published exchange limit was found, so the bound only stops values far outside what was seen.
   bid_min: 0.0
-  bid_max: 100000.0
+  bid_max: 200000.0
   # ASSUMPTION: all-India demand in MW stays between 50000 and 300000.
   demand_min: 50000.0
   demand_max: 300000.0
