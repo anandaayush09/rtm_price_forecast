@@ -8,12 +8,15 @@
 # (the original memorandum itself was not opened).
 #
 # These are central government holidays. State holidays and restricted holidays are not included.
-# 2025 and 2026 are PLACEHOLDER: the lists for the newer data window have not been added yet.
+# Source for 2025 and 2026: the same department's office memoranda F.No.12/2/2023-JCA dated 09.07.2024
+# (year 2025) and 03.07.2025 (year 2026), Annexure-I in each case. Both memoranda were read in full.
 sources:
   - years: [2020]
     document: "DoPT OM F.No.12/1/2019-JCA-2 dated 18.06.2019, Annexure-I"
-  - years: [2025, 2026]
-    document: PLACEHOLDER
+  - years: [2025]
+    document: "DoPT OM F.No.12/2/2023-JCA dated 09.07.2024, Annexure-I"
+  - years: [2026]
+    document: "DoPT OM F.No.12/2/2023-JCA dated 03.07.2025, Annexure-I"
 holidays:
   - {date: 2020-01-26, name: Republic Day}
   - {date: 2020-03-10, name: Holi}
@@ -32,3 +35,37 @@ holidays:
   - {date: 2020-11-14, name: Diwali (Deepavali)}
   - {date: 2020-11-30, name: Guru Nanak's Birthday}
   - {date: 2020-12-25, name: Christmas Day}
+  - {date: 2025-01-26, name: Republic Day}
+  - {date: 2025-02-26, name: Maha Shivratri}
+  - {date: 2025-03-14, name: Holi}
+  - {date: 2025-03-31, name: Id-ul-Fitr}
+  - {date: 2025-04-10, name: Mahavir Jayanti}
+  - {date: 2025-04-18, name: Good Friday}
+  - {date: 2025-05-12, name: Budha Purnima}
+  - {date: 2025-06-07, name: Id-ul-Zuha (Bakrid)}
+  - {date: 2025-07-06, name: Muharram}
+  - {date: 2025-08-15, name: Independence Day}
+  - {date: 2025-08-16, name: Janmashtami}
+  - {date: 2025-09-05, name: Milad-un-Nabi or Id-e-Milad}
+  - {date: 2025-10-02, name: Mahatma Gandhi's Birthday}
+  - {date: 2025-10-02, name: Dussehra}
+  - {date: 2025-10-20, name: Diwali (Deepavali)}
+  - {date: 2025-11-05, name: Guru Nanak's Birthday}
+  - {date: 2025-12-25, name: Christmas Day}
+  - {date: 2026-01-26, name: Republic Day}
+  - {date: 2026-03-04, name: Holi}
+  - {date: 2026-03-21, name: Id-ul-Fitr}
+  - {date: 2026-03-26, name: Ram Navami}
+  - {date: 2026-03-31, name: Mahavir Jayanti}
+  - {date: 2026-04-03, name: Good Friday}
+  - {date: 2026-05-01, name: Budha Purnima}
+  - {date: 2026-05-27, name: Id-ul-Zuha (Bakrid)}
+  - {date: 2026-06-26, name: Muharram}
+  - {date: 2026-08-15, name: Independence Day}
+  - {date: 2026-08-26, name: Milad-un-Nabi or Id-e-Milad}
+  - {date: 2026-09-04, name: Janmashtami}
+  - {date: 2026-10-02, name: Mahatma Gandhi's Birthday}
+  - {date: 2026-10-20, name: Dussehra}
+  - {date: 2026-11-08, name: Diwali (Deepavali)}
+  - {date: 2026-11-24, name: Guru Nanak's Birthday}
+  - {date: 2026-12-25, name: Christmas Day}
