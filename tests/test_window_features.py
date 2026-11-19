@@ -11,9 +11,10 @@ from rtm_forecast.config import (
     load_window_experiment_params,
 )
 from rtm_forecast.iex_export import parse_snapshot
+from rtm_forecast.kaggle_export import COLUMNS, build_export
 from rtm_forecast.metrics import cap_scores
 from rtm_forecast.psp import parse_timeseries
-from rtm_forecast.splits import rolling_folds
+from rtm_forecast.splits import Periods, rolling_folds
 from rtm_forecast.window import build_window
 from rtm_forecast.window_features import (
     EXTRA_GROUPS,
@@ -115,3 +116,20 @@ def test_experiment_params_load() -> None:
     params = load_window_experiment_params(ROOT / "params.yaml")
     assert params.test_days == 60 and params.folds * params.fold_days == 150
     assert params.price_cap == 10000.0 and params.naive_reference == "rtm_price_lag1d"
+
+
+def test_kaggle_export_has_prices_and_labels_but_no_sheet_values(
+    feature_params: FeatureParams,
+) -> None:
+    window = _window()
+    days = [pd.Timestamp(d) for d in sorted(window["date"].unique())]
+    periods = Periods(days[:6], days[6:9], days[9:])
+    folds = [days[6:9], days[9:]]
+    table = build_export(window, folds, periods, feature_params.imputation)
+    assert list(table.columns) == COLUMNS
+    assert not {"demand", "wind", "solar", "thermal"} & set(table.columns)
+    assert len(table) == len(window)
+    assert table.loc[table["date"] == days[0], "fold"].isna().all()
+    assert set(table.loc[table["date"].isin(days[9:]), "period"]) == {"test"}
+    assert set(table.loc[table["date"].isin(days[6:9]), "period"]) == {"validation"}
+    assert table.loc[table["date"].isin(days[9:]), "fold"].eq(2).all()
