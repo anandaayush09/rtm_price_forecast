@@ -93,3 +93,28 @@ def load_experiment_params(path: Path = Path("params.yaml")) -> ExperimentParams
         tuning_refit_every_days=int(section["tuning_refit_every_days"]),
         naive_reference=str(section["naive_reference"]),
     )
+
+
+@dataclass(frozen=True)
+class WindowParams:
+    start: date
+    end: date
+    rtm_dir: Path
+    dam_dir: Path
+    psp_dir: Path
+    clean_path: Path
+    report_path: Path
+
+
+def load_window_params(path: Path = Path("params.yaml")) -> WindowParams:
+    with path.open(encoding="utf-8") as handle:
+        section = yaml.safe_load(handle)["window"]
+    return WindowParams(
+        start=date.fromisoformat(str(section["start"])),
+        end=date.fromisoformat(str(section["end"])),
+        rtm_dir=Path(section["rtm_dir"]),
+        dam_dir=Path(section["dam_dir"]),
+        psp_dir=Path(section["psp_dir"]),
+        clean_path=Path(section["clean_path"]),
+        report_path=Path(section["report_path"]),
+    )

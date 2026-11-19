@@ -7,13 +7,15 @@ from typing import cast
 
 import pandas as pd
 
+from rtm_forecast import iex_export, psp
 from rtm_forecast.audit import build_report
 from rtm_forecast.calendar import load_holidays
-from rtm_forecast.config import load_data_params, load_feature_params
-from rtm_forecast.contracts import clean_schema, raw_schema
+from rtm_forecast.config import load_data_params, load_feature_params, load_window_params
+from rtm_forecast.contracts import clean_schema, raw_schema, window_schema
 from rtm_forecast.features import build_features, feature_groups
 from rtm_forecast.ingest import BLOCKS_PER_DAY, clean, load_raw
 from rtm_forecast.transforms import AsinhTransform, choose_scale
+from rtm_forecast.window import build_window, window_report
 
 
 def run_clean(params_path: Path) -> None:
@@ -23,6 +25,29 @@ def run_clean(params_path: Path) -> None:
     params.clean_path.parent.mkdir(parents=True, exist_ok=True)
     table.to_parquet(params.clean_path, index=False)
     print(f"wrote {len(table)} rows to {params.clean_path}")
+
+
+def run_clean_window(params_path: Path) -> None:
+    data = load_data_params(params_path)
+    window = load_window_params(params_path)
+    rtm = iex_export.load_folder(window.rtm_dir, "rtm")
+    dam = iex_export.load_folder(window.dam_dir, "dam")
+    sheets = psp.load_folder(window.psp_dir)
+    table = window_schema(data).validate(build_window(rtm, dam, sheets, window.start, window.end))
+    first, last = pd.Timestamp(window.start), pd.Timestamp(window.end)
+    outside = {
+        name: int((~source["date"].between(first, last)).sum())
+        for name, source in (("rtm", rtm), ("dam", dam), ("demand", sheets))
+    }
+    layouts = {
+        str(layout): int(count) for layout, count in table["psp_layout"].value_counts().items()
+    }
+    report = window_report(table, outside, layouts)
+    window.clean_path.parent.mkdir(parents=True, exist_ok=True)
+    table.to_parquet(window.clean_path, index=False)
+    window.report_path.parent.mkdir(parents=True, exist_ok=True)
+    window.report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {len(table)} rows to {window.clean_path}")
 
 
 def run_audit(params_path: Path) -> None:
@@ -70,10 +95,16 @@ def run_features(params_path: Path) -> None:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="rtm-forecast")
-    parser.add_argument("command", choices=["clean", "audit", "features"])
+    parser.add_argument("command", choices=["clean", "clean-window", "audit", "features"])
     parser.add_argument("--params", type=Path, default=Path("params.yaml"))
     args = parser.parse_args(argv)
-    {"clean": run_clean, "audit": run_audit, "features": run_features}[args.command](args.params)
+    commands = {
+        "clean": run_clean,
+        "clean-window": run_clean_window,
+        "audit": run_audit,
+        "features": run_features,
+    }
+    commands[args.command](args.params)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 """Join the IEX RTM and DAM exports and the daily power-supply sheets on one 96-block grid."""
 
 from datetime import date
+from typing import Any
 
 import pandas as pd
 
@@ -84,4 +85,37 @@ def summarise(table: pd.DataFrame) -> dict[str, int]:
         "dam_missing": int(table["dam_missing"].sum()),
         "demand_missing": int(table["demand_missing"].sum()),
         "demand_suspect": int(table["demand_suspect"].sum()),
+    }
+
+
+def _runs(table: pd.DataFrame, column: str) -> list[dict[str, Any]]:
+    """Runs of consecutive blocks where a flag is set, as start time, first block and length."""
+    flag = table[column]
+    run_id = (flag != flag.shift()).cumsum()
+    runs: list[dict[str, Any]] = []
+    for _, group in table[flag].groupby(run_id[flag]):
+        runs.append(
+            {
+                "start": group["timestamp"].iloc[0].isoformat(),
+                "block": int(group["block"].iloc[0]),
+                "length": len(group),
+            }
+        )
+    return runs
+
+
+def window_report(
+    table: pd.DataFrame, outside_window: dict[str, int], layouts: dict[str, int]
+) -> dict[str, Any]:
+    """Counts and positions only. No price, bid or demand value goes into the report."""
+    return {
+        "first_day": table["date"].min().date().isoformat(),
+        "last_day": table["date"].max().date().isoformat(),
+        **summarise(table),
+        "rows_outside_window": outside_window,
+        "demand_sheet_layouts": layouts,
+        "rtm_missing_runs": _runs(table, "rtm_missing"),
+        "dam_missing_runs": _runs(table, "dam_missing"),
+        "demand_missing_runs": _runs(table, "demand_missing"),
+        "demand_suspect_runs": _runs(table, "demand_suspect"),
     }

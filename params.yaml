@@ -47,3 +47,14 @@ experiment:
   # The seasonal-naive reference for rMAE: same block one week earlier.
   naive_reference: rtm_price_lag7d
 
+# The 2025-26 window. The input folders hold exports and sheets that are not published, so this stage
+# lives in pipelines/window/dvc.yaml and is run locally. Only the report is tracked in git.
+window:
+  start: "2025-11-01"
+  end: "2026-10-31"
+  rtm_dir: data/external/iex_rtm
+  dam_dir: data/external/iex_dam
+  psp_dir: data/external/demand/psp
+  clean_path: data/interim/clean_window.parquet
+  report_path: reports/window_quality.json
+
