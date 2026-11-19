@@ -58,3 +58,22 @@ window:
   clean_path: data/interim/clean_window.parquet
   report_path: reports/window_quality.json
 
+# Model comparison on the 2025-26 window. Chosen after the audit of that window (private notes), not copied from the old window:
+# the price cap is hit in a fifth of the blocks and the share rises in the last months, so the test period is long and
+# a rolling check over monthly folds accompanies it.
+window_experiment:
+  validation_days: 30
+  test_days: 60
+  # Rolling check: this many folds of fold_days days each, ending at the last day. Each fold trains on all earlier days.
+  folds: 5
+  fold_days: 30
+  seed: 0
+  tuning_trials: 30
+  tuning_refit_every_days: 2
+  # Same block a day earlier is the main reference, same block a week earlier the second one (the 2020-21 reference).
+  naive_reference: rtm_price_lag1d
+  second_reference: rtm_price_lag7d
+  # The exchange price cap in INR/MWh and the share of it from which a forecast counts as "at the cap".
+  price_cap: 10000.0
+  cap_forecast_share: 0.95
+

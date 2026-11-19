@@ -24,3 +24,15 @@ def make_periods(days: list[pd.Timestamp], validation_days: int, test_days: int)
         validation=ordered[validation_start:test_start],
         test=ordered[test_start:],
     )
+
+
+def rolling_folds(days: list[pd.Timestamp], folds: int, fold_days: int) -> list[list[pd.Timestamp]]:
+    """The last ``folds * fold_days`` days cut into consecutive folds, earliest fold first.
+
+    A fold is forecast with a model that has seen every earlier day and nothing later.
+    """
+    ordered = sorted(days)
+    if folds < 1 or fold_days < 1 or folds * fold_days >= len(ordered):
+        raise ValueError("not enough days for the requested folds")
+    first = len(ordered) - folds * fold_days
+    return [ordered[first + k * fold_days : first + (k + 1) * fold_days] for k in range(folds)]

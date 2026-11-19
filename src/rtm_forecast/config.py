@@ -118,3 +118,36 @@ def load_window_params(path: Path = Path("params.yaml")) -> WindowParams:
         clean_path=Path(section["clean_path"]),
         report_path=Path(section["report_path"]),
     )
+
+
+@dataclass(frozen=True)
+class WindowExperimentParams:
+    validation_days: int
+    test_days: int
+    folds: int
+    fold_days: int
+    seed: int
+    tuning_trials: int
+    tuning_refit_every_days: int
+    naive_reference: str
+    second_reference: str
+    price_cap: float
+    cap_forecast_share: float
+
+
+def load_window_experiment_params(path: Path = Path("params.yaml")) -> WindowExperimentParams:
+    with path.open(encoding="utf-8") as handle:
+        section = yaml.safe_load(handle)["window_experiment"]
+    return WindowExperimentParams(
+        validation_days=int(section["validation_days"]),
+        test_days=int(section["test_days"]),
+        folds=int(section["folds"]),
+        fold_days=int(section["fold_days"]),
+        seed=int(section["seed"]),
+        tuning_trials=int(section["tuning_trials"]),
+        tuning_refit_every_days=int(section["tuning_refit_every_days"]),
+        naive_reference=str(section["naive_reference"]),
+        second_reference=str(section["second_reference"]),
+        price_cap=float(section["price_cap"]),
+        cap_forecast_share=float(section["cap_forecast_share"]),
+    )

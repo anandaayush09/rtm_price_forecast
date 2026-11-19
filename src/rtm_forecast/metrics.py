@@ -52,3 +52,33 @@ def daily_mae(frame: pd.DataFrame) -> pd.DataFrame:
     observed = frame[frame["actual"].notna()].copy()
     observed["error"] = (observed["actual"] - observed["prediction"]).abs()
     return observed.pivot_table(index="date", columns="model", values="error", aggfunc="mean")
+
+
+def cap_scores(frame: pd.DataFrame, cap: float, forecast_share: float) -> pd.DataFrame:
+    """How well each model handles blocks at the price cap.
+
+    A block is at the cap when the published price is at least ``cap``; a forecast calls the cap
+    when it is at least ``forecast_share * cap``. Also the MAE on cap blocks and on the others.
+    """
+    observed = frame[frame["actual"].notna()]
+    rows = {}
+    for model, part in observed.groupby("model"):
+        actual = part["actual"].to_numpy()
+        predicted = part["prediction"].to_numpy()
+        is_cap = actual >= cap
+        called = predicted >= forecast_share * cap
+        hits = int((is_cap & called).sum())
+        precision = hits / int(called.sum()) if called.any() else float("nan")
+        recall = hits / int(is_cap.sum()) if is_cap.any() else float("nan")
+        both = precision + recall
+        rows[model] = {
+            "cap_share": float(is_cap.mean()),
+            "cap_precision": precision,
+            "cap_recall": recall,
+            "cap_f1": 2 * precision * recall / both if both > 0 else float("nan"),
+            "MAE_cap": mae(actual[is_cap], predicted[is_cap]) if is_cap.any() else float("nan"),
+            "MAE_other": mae(actual[~is_cap], predicted[~is_cap])
+            if (~is_cap).any()
+            else float("nan"),
+        }
+    return pd.DataFrame(rows).T
