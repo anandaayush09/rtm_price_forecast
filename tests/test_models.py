@@ -100,3 +100,16 @@ def test_mstl_forecast_uses_only_earlier_values(
     second = rolling_origin(table, day, m.mstl_ets_predictor(changed), "mstl")
     np.testing.assert_array_equal(first["prediction"], second["prediction"])
     assert np.isfinite(first["prediction"]).all()
+
+
+def test_lars_solver_gives_the_same_lasso_forecasts(
+    table: pd.DataFrame, feature_params: FeatureParams
+) -> None:
+    columns = _columns(feature_params, with_demand=False)
+    transform = AsinhTransform(1000.0)
+    days = _days(table)[:1]
+    slow = rolling_origin(
+        table, days, m.lear_predictor(columns, transform, 0.01, 0, "coordinate"), "a"
+    )
+    fast = rolling_origin(table, days, m.lear_predictor(columns, transform, 0.01, 0, "lars"), "a")
+    np.testing.assert_allclose(fast["prediction"], slow["prediction"], rtol=2e-3)

@@ -40,15 +40,21 @@ def window_feature_groups(params: FeatureParams) -> dict[str, list[str]]:
 
 
 def build_window_features(
-    window: pd.DataFrame, params: FeatureParams, holidays: frozenset[date]
+    window: pd.DataFrame,
+    params: FeatureParams,
+    holidays: frozenset[date],
+    one_definition: bool = True,
 ) -> pd.DataFrame:
     """One row per (day, block) with the target ``rtm_price`` and the inputs known beforehand.
 
-    Missing demand, wind and solar are not filled: the lagged inputs stay missing where the
-    sheet had no usable reading, and a model that cannot take missing values leaves them out.
+    With ``one_definition`` the storage load is taken out of demand; otherwise demand is as
+    published. Missing demand, wind and solar are not filled: the lagged inputs stay missing
+    where the sheet had no usable reading, and a model that cannot take missing values leaves
+    them out.
     """
     table = window.copy()
-    table["demand"] = one_demand_definition(window)
+    if one_definition:
+        table["demand"] = one_demand_definition(window)
     # Missing demand was masked when the window was built, so the old test for stale or copied
     # demand and for early days is switched off.
     base = build_features(table, dataclasses.replace(params, demand_policy="keep"), holidays)

@@ -6,14 +6,14 @@ its output is transformed back.
 """
 
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
 from catboost import CatBoostRegressor
 from lightgbm import LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LassoLars
 from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from statsmodels.tsa.seasonal import MSTL
@@ -81,11 +81,17 @@ def catboost_predictor(
 
 
 def lear_predictor(
-    columns: Sequence[str], transform: AsinhTransform | None, alpha: float, seed: int
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+    alpha: float,
+    seed: int,
+    solver: Literal["coordinate", "lars"] = "coordinate",
 ) -> Predictor:
     """Lasso on the numeric inputs plus one-hot block and weekday, after standardising.
 
     Standardising uses the training rows only. The columns must not contain missing values.
+    ``lars`` follows the exact lasso path and is much faster on many rows and small alpha;
+    ``coordinate`` is the solver the first benchmark used.
     """
     numeric = [c for c in columns if c not in ("block", "weekday")]
 
@@ -102,7 +108,11 @@ def lear_predictor(
         if x_train.isna().any().any() or x_test.isna().any().any():
             raise ValueError("LEAR inputs contain missing values")
         scaler = StandardScaler().fit(x_train)
-        model = Lasso(alpha=alpha, max_iter=10000, random_state=seed)
+        model: Lasso | LassoLars
+        if solver == "lars":
+            model = LassoLars(alpha=alpha)
+        else:
+            model = Lasso(alpha=alpha, max_iter=10000, random_state=seed)
         model.fit(scaler.transform(x_train), _fit_target(train, transform))
         return _back(np.asarray(model.predict(scaler.transform(x_test))), transform)
 
