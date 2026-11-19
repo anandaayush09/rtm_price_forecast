@@ -1,0 +1,40 @@
+stages:
+  clean:
+    cmd: python -m rtm_forecast.cli clean
+    deps:
+      - data/raw/price_data.csv
+      - src/rtm_forecast/ingest.py
+      - src/rtm_forecast/contracts.py
+      - src/rtm_forecast/config.py
+      - src/rtm_forecast/cli.py
+    params:
+      - data
+    outs:
+      - data/interim/clean.parquet
+  audit:
+    cmd: python -m rtm_forecast.cli audit
+    deps:
+      - data/interim/clean.parquet
+      - src/rtm_forecast/audit.py
+    outs:
+      - reports/data_quality.json:
+          cache: false
+  features:
+    cmd: python -m rtm_forecast.cli features
+    deps:
+      - data/interim/clean.parquet
+      - config/holidays.yaml
+      - src/rtm_forecast/features.py
+      - src/rtm_forecast/imputation.py
+      - src/rtm_forecast/transforms.py
+      - src/rtm_forecast/calendar.py
+      - src/rtm_forecast/audit.py
+      - src/rtm_forecast/config.py
+      - src/rtm_forecast/cli.py
+    params:
+      - features
+      - data.stale_min_blocks
+    outs:
+      - data/processed/features.parquet
+      - reports/feature_report.json:
+          cache: false

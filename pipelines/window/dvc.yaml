@@ -1,0 +1,23 @@
+# Not part of the root pipeline: the inputs are private files that are not in the repository, so CI cannot
+# rebuild this stage. Run it locally with `dvc repro pipelines/window/dvc.yaml`. The report is tracked in git.
+stages:
+  clean_window:
+    wdir: ../..
+    cmd: python -m rtm_forecast.cli clean-window
+    deps:
+      - data/external/iex_rtm
+      - data/external/iex_dam
+      - data/external/demand/psp
+      - src/rtm_forecast/window.py
+      - src/rtm_forecast/iex_export.py
+      - src/rtm_forecast/psp.py
+      - src/rtm_forecast/contracts.py
+      - src/rtm_forecast/config.py
+      - src/rtm_forecast/cli.py
+    params:
+      - data
+      - window
+    outs:
+      - data/interim/clean_window.parquet
+      - reports/window_quality.json:
+          cache: false

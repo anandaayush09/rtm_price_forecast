@@ -1,0 +1,19 @@
+{
+ "xgb_best_params": {
+  "colsample_bytree": 0.5,
+  "gamma": 0.05,
+  "learning_rate": 0.07,
+  "max_depth": 4,
+  "n_estimators": 100
+ },
+ "xgb_best_score": -288694.9656970505,
+ "rf_best_params": {
+  "bootstrap": true,
+  "max_depth": 10,
+  "max_features": 18,
+  "min_samples_leaf": 4,
+  "min_samples_split": 60,
+  "n_estimators": 700
+ },
+ "rf_best_score": 0.5490725803838947
+}

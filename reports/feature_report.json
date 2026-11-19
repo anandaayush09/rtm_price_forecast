@@ -1,0 +1,49 @@
+{
+  "rows": 9984,
+  "first_day": "2020-10-08",
+  "last_day": "2021-01-19",
+  "target_observed_rows": 9976,
+  "feature_groups": {
+    "calendar": [
+      "block",
+      "weekday",
+      "is_holiday"
+    ],
+    "dam_today": [
+      "dam_price",
+      "dam_purchase_bid",
+      "dam_selling_bid",
+      "dam_price_day_mean",
+      "dam_price_day_max"
+    ],
+    "dam_change": [
+      "dam_price_change_1d"
+    ],
+    "rtm_lags": [
+      "rtm_price_lag1d",
+      "rtm_price_lag7d",
+      "rtm_purchase_bid_lag1d",
+      "rtm_purchase_bid_lag7d",
+      "rtm_selling_bid_lag1d",
+      "rtm_selling_bid_lag7d",
+      "rtm_price_prev_day_mean",
+      "rtm_price_prev_day_std"
+    ],
+    "spread_lag": [
+      "rtm_dam_spread_lag1d"
+    ],
+    "demand_lags": [
+      "demand_lag1d",
+      "demand_lag7d"
+    ]
+  },
+  "missing_inputs": {
+    "demand_lag1d": 1500,
+    "demand_lag7d": 2067
+  },
+  "imputation": "linear",
+  "demand_policy": "mask",
+  "asinh_scale": 1000.0,
+  "price_skew_raw": 1.595,
+  "price_skew_asinh": 0.156
+}

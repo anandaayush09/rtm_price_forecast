@@ -1,0 +1,79 @@
+data:
+  raw_path: data/raw/price_data.csv
+  clean_path: data/interim/clean.parquet
+  report_path: reports/data_quality.json
+  # Bounds only catch obviously broken rows. They are not market rules.
+  # ASSUMPTION: prices in INR/MWh stay between 0 and 20000 (confirm against the CERC price cap orders).
+  price_min: 0.0
+  price_max: 20000.0
+  # The purchase and selling bid columns look like volumes in MW (values 200 to 27000), not prices.
+  # ASSUMPTION: bid volumes stay between 0 and 200000 MW. The 2020 data stayed below 30000 MW; the 2025-26 RTM data reaches
+  # 139317.3 MW. No published exchange limit was found, so the bound only stops values far outside what was seen.
+  bid_min: 0.0
+  bid_max: 200000.0
+  # ASSUMPTION: all-India demand in MW stays between 50000 and 300000.
+  demand_min: 50000.0
+  demand_max: 300000.0
+  # Chosen from the data: demand repeats exactly for 2 or 3 blocks in 12 places and for 4 to 87 blocks in
+  # 16 places. Four blocks (one hour) is the cut-off for calling a run of equal values stale.
+  stale_min_blocks: 4
+
+features:
+  features_path: data/processed/features.parquet
+  report_path: reports/feature_report.json
+  # Chosen with src/rtm_forecast/imputation.py (notebook 04): straight-line fill had the lowest error.
+  imputation: linear
+  lags_days: [1, 7]
+  min_history_days: 7
+  # "mask" sets demand to missing where it looks unreliable, "keep" leaves it as published.
+  demand_policy: mask
+  # Demand before this date is treated as unreliable (see the data audit).
+  demand_reliable_from: "2020-10-16"
+  # Candidate scales for the asinh transform. The choice is made on the training part only.
+  asinh_scales: [50, 100, 250, 500, 1000, 2000]
+  asinh_train_days: 90
+  holidays_path: config/holidays.yaml
+
+experiment:
+  # Chronological split of the feature days. Test days are the last ones and are not looked at until
+  # every choice has been made on the validation days.
+  validation_days: 14
+  test_days: 21
+  seed: 0
+  # Number of Optuna trials for each tuned model family (same for every family).
+  tuning_trials: 30
+  # While tuning, refit every second validation day to keep the runs short. Final runs refit daily.
+  tuning_refit_every_days: 2
+  # The seasonal-naive reference for rMAE: same block one week earlier.
+  naive_reference: rtm_price_lag7d
+
+# The 2025-26 window. The input folders hold exports and sheets that are not published, so this stage
+# lives in pipelines/window/dvc.yaml and is run locally. Only the report is tracked in git.
+window:
+  start: "2025-11-01"
+  end: "2026-10-31"
+  rtm_dir: data/external/iex_rtm
+  dam_dir: data/external/iex_dam
+  psp_dir: data/external/demand/psp
+  clean_path: data/interim/clean_window.parquet
+  report_path: reports/window_quality.json
+
+# Model comparison on the 2025-26 window. Chosen after the audit of that window (private notes), not copied from the old window:
+# the price cap is hit in a fifth of the blocks and the share rises in the last months, so the test period is long and
+# a rolling check over monthly folds accompanies it.
+window_experiment:
+  validation_days: 30
+  test_days: 60
+  # Rolling check: this many folds of fold_days days each, ending at the last day. Each fold trains on all earlier days.
+  folds: 5
+  fold_days: 30
+  seed: 0
+  tuning_trials: 30
+  tuning_refit_every_days: 2
+  # Same block a day earlier is the main reference, same block a week earlier the second one (the 2020-21 reference).
+  naive_reference: rtm_price_lag1d
+  second_reference: rtm_price_lag7d
+  # The exchange price cap in INR/MWh and the share of it from which a forecast counts as "at the cap".
+  price_cap: 10000.0
+  cap_forecast_share: 0.95
+

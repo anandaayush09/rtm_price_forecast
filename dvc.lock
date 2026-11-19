@@ -1,0 +1,129 @@
+schema: '2.0'
+stages:
+  clean:
+    cmd: python -m rtm_forecast.cli clean
+    deps:
+    - path: data/raw/price_data.csv
+      hash: md5
+      md5: b0257dd5e457a6811134d67b9d601443
+      size: 701370
+    - path: src/rtm_forecast/cli.py
+      hash: md5
+      md5: 4b46f8ebb643d675b074256850df60aa
+      size: 3519
+    - path: src/rtm_forecast/config.py
+      hash: md5
+      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
+      size: 3141
+    - path: src/rtm_forecast/contracts.py
+      hash: md5
+      md5: 32a16b2fb18f22f715ab17b24edb3b6a
+      size: 2544
+    - path: src/rtm_forecast/ingest.py
+      hash: md5
+      md5: 2f5e76d73ba7f2f20ae5936c8689d937
+      size: 1758
+    params:
+      params.yaml:
+        data:
+          raw_path: data/raw/price_data.csv
+          clean_path: data/interim/clean.parquet
+          report_path: reports/data_quality.json
+          price_min: 0.0
+          price_max: 20000.0
+          bid_min: 0.0
+          bid_max: 100000.0
+          demand_min: 50000.0
+          demand_max: 300000.0
+          stale_min_blocks: 4
+    outs:
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+  audit:
+    cmd: python -m rtm_forecast.cli audit
+    deps:
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+    - path: src/rtm_forecast/audit.py
+      hash: md5
+      md5: 36e51ed9179f2e2612274ab5b0af381b
+      size: 4332
+    outs:
+    - path: reports/data_quality.json
+      hash: md5
+      md5: 24b234e2689338f3d1e1f0da0a53b560
+      size: 4841
+  features:
+    cmd: python -m rtm_forecast.cli features
+    deps:
+    - path: config/holidays.yaml
+      hash: md5
+      md5: 0dd33231a12036755d59aec28d8ea002
+      size: 1641
+    - path: data/interim/clean.parquet
+      hash: md5
+      md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
+      size: 486654
+    - path: src/rtm_forecast/audit.py
+      hash: md5
+      md5: 36e51ed9179f2e2612274ab5b0af381b
+      size: 4332
+    - path: src/rtm_forecast/calendar.py
+      hash: md5
+      md5: 913785e7acaf99cf0e3360c11ecae8cd
+      size: 735
+    - path: src/rtm_forecast/cli.py
+      hash: md5
+      md5: 4b46f8ebb643d675b074256850df60aa
+      size: 3519
+    - path: src/rtm_forecast/config.py
+      hash: md5
+      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
+      size: 3141
+    - path: src/rtm_forecast/features.py
+      hash: md5
+      md5: a190ae44796c0a23bf08511b07a6df54
+      size: 5918
+    - path: src/rtm_forecast/imputation.py
+      hash: md5
+      md5: 40009c864abfbb6a06222e65fb597c18
+      size: 4497
+    - path: src/rtm_forecast/transforms.py
+      hash: md5
+      md5: 4156c18127295694c88dc55c3c2ef48b
+      size: 1171
+    params:
+      params.yaml:
+        data.stale_min_blocks: 4
+        features:
+          features_path: data/processed/features.parquet
+          report_path: reports/feature_report.json
+          imputation: linear
+          lags_days:
+          - 1
+          - 7
+          min_history_days: 7
+          demand_policy: mask
+          demand_reliable_from: '2020-10-16'
+          asinh_scales:
+          - 50
+          - 100
+          - 250
+          - 500
+          - 1000
+          - 2000
+          asinh_train_days: 90
+          holidays_path: config/holidays.yaml
+    outs:
+    - path: data/processed/features.parquet
+      hash: md5
+      md5: 7a57d36f0a01d615d86768fa10177edb
+      size: 855198
+    - path: reports/feature_report.json
+      hash: md5
+      md5: a9dcb3a29990c60b014e1ef740908568
+      size: 1068

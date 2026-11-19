@@ -1,0 +1,157 @@
+[
+ {
+  "cell": 11,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 12,
+  "seconds": 21.2,
+  "output": ""
+ },
+ {
+  "cell": 14,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 15,
+  "seconds": 0.0,
+  "output": "         Date  TimeblockId  ...  DAM_Selling_Bid  Demand\n0  01-10-2020            1  ...          12455.1  150321\n1  01-10-2020            2  ...          12317.0  149035\n2  01-10-2020            3  ...          12182.7  148483\n3  01-10-2020            4  ...          12298.9  146938\n4  01-10-2020            5  ...          12276.0  145493\n\n[5 rows x 9 columns]\n"
+ },
+ {
+  "cell": 17,
+  "seconds": 0.0,
+  "output": "(10656, 9)\n"
+ },
+ {
+  "cell": 18,
+  "seconds": 0.0,
+  "output": "<class 'pandas.core.frame.DataFrame'>\nRangeIndex: 10656 entries, 0 to 10655\nData columns (total 9 columns):\n #   Column            Non-Null Count  Dtype  \n---  ------            --------------  -----  \n 0   Date              10656 non-null  object \n 1   TimeblockId       10656 non-null  int64  \n 2   DAM_Price         10656 non-null  float64\n 3   RTM_Price         10656 non-null  object \n 4   RTM_Purchase_Bid  10656 non-null  object \n 5   RTM_Selling_Bid   10656 non-null  object \n 6   DAM_Purchase_Bid  10656 non-null  float64\n 7   DAM_Selling_Bid   10656 non-null  float64\n 8   Demand            10656 non-null  int64  \ndtypes: float64(3), int64(2), object(4)\nmemory usage: 749.4+ KB\n"
+ },
+ {
+  "cell": 22,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 25,
+  "seconds": 0.0,
+  "output": "        Date  TimeblockId  DAM_Price  ...  DAM_Selling_Bid  Demand  HolidayId\n0 2020-01-10            1    2624.91  ...          12455.1  150321          0\n1 2020-01-10            2    2609.88  ...          12317.0  149035          0\n2 2020-01-10            3    2674.59  ...          12182.7  148483          0\n3 2020-01-10            4    2609.42  ...          12298.9  146938          0\n4 2020-01-10            5    2698.07  ...          12276.0  145493          0\n\n[5 rows x 10 columns]\n"
+ },
+ {
+  "cell": 27,
+  "seconds": 0.0,
+  "output": "0    7680\n1    2976\nName: HolidayId, dtype: int64\n"
+ },
+ {
+  "cell": 29,
+  "seconds": 0.0,
+  "output": "Date                 0\nTimeblockId          0\nDAM_Price            0\nRTM_Price           12\nRTM_Purchase_Bid    12\nRTM_Selling_Bid     12\nDAM_Purchase_Bid     0\nDAM_Selling_Bid      0\nDemand               0\nHolidayId            0\ndtype: int64\n"
+ },
+ {
+  "cell": 31,
+  "seconds": 0.0,
+  "output": "Date                0\nTimeblockId         0\nDAM_Price           0\nRTM_Price           0\nRTM_Purchase_Bid    0\nRTM_Selling_Bid     0\nDAM_Purchase_Bid    0\nDAM_Selling_Bid     0\nDemand              0\nHolidayId           0\ndtype: int64\n"
+ },
+ {
+  "cell": 34,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 36,
+  "seconds": 0.0,
+  "output": "0    7392\n1    2784\n2     480\nName: HolidayId, dtype: int64\n"
+ },
+ {
+  "cell": 52,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 53,
+  "seconds": 0.0,
+  "output": "   RTM_Price_PD  RTM_Purchase_Bid_PD  RTM_Selling_Bid_PD\n0       3673.80               2115.6              2284.8\n1       3673.08               2062.1              2337.6\n2       3199.19               1715.5              2371.5\n3       3199.29               1716.8              2363.8\n4       2999.96               1459.3              2156.3\n"
+ },
+ {
+  "cell": 54,
+  "seconds": 0.0,
+  "output": "((9984, 9), (9984, 3))\n"
+ },
+ {
+  "cell": 55,
+  "seconds": 0.0,
+  "output": "   TimeblockId  HolidayId  ...  RTM_Selling_Bid_SDLW  RTM_Price_SD\n0            1          0  ...                3145.7       3921.56\n1            2          0  ...                3122.7       3921.12\n2            3          0  ...                2789.0       3214.28\n3            4          0  ...                2818.4       3199.59\n4            5          0  ...                2907.7       3119.50\n\n[5 rows x 12 columns]\n"
+ },
+ {
+  "cell": 58,
+  "seconds": 0.0,
+  "output": "   TimeblockId  HolidayId  DAM_Price  ...  RTM_Price_SD  Demand_PD  Demand_SDLW\n0            1          0    2849.39  ...       3921.56     145315     148652.0\n1            2          0    2804.69  ...       3921.12     143759     147277.0\n2            3          0    2802.65  ...       3214.28     143365     146777.0\n3            4          0    2749.39  ...       3199.59     141513     145130.0\n4            5          0    2799.37  ...       3119.50     139912     143633.0\n\n[5 rows x 14 columns]\n"
+ },
+ {
+  "cell": 59,
+  "seconds": 0.1,
+  "output": "   TimeblockId_1  TimeblockId_2  ...  RTM_Selling_Bid_SDLW  RTM_Price_SD\n0              1              0  ...                3145.7       3921.56\n1              0              1  ...                3122.7       3921.12\n2              0              0  ...                2789.0       3214.28\n3              0              0  ...                2818.4       3199.59\n4              0              0  ...                2907.7       3119.50\n\n[5 rows x 110 columns]\n"
+ },
+ {
+  "cell": 63,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 64,
+  "seconds": 0.0,
+  "output": "((9984, 109), (9984,))\n"
+ },
+ {
+  "cell": 65,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 66,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 67,
+  "seconds": 0.0,
+  "output": "((8832, 109), (8832,), (96, 109), (96,))\n"
+ },
+ {
+  "cell": 72,
+  "seconds": 759.2,
+  "output": "Fitting 5 folds for each of 108 candidates, totalling 540 fits\nBest Params: {'colsample_bytree': 0.5, 'gamma': 0.05, 'learning_rate': 0.07, 'max_depth': 4, 'n_estimators': 100}\nBest Score: -288694.9656970505\nBest Estimator: XGBRegressor(base_score=0.5, booster='gbtree', colsample_bylevel=1,\n             colsample_bynode=1, colsample_bytree=0.5, gamma=0.05, gpu_id=-1,\n             importance_type='gain', interaction_constraints='',\n             learning_rate=0.07, max_delta_step=0, max_depth=4,\n             min_child_weight=1, missing=nan, monotone_constraints='()',\n             n_estimators=100, n_jobs=8, num_parallel_tree=1, random_state=0,\n             reg_alpha=0, reg_lambda=1, scale_pos_weight=1, subsample=1,\n             tree_method='exact', validate_parameters=1, verbosity=None)\n"
+ },
+ {
+  "cell": 74,
+  "seconds": 1.4,
+  "output": ""
+ },
+ {
+  "cell": 76,
+  "seconds": 0.0,
+  "output": ""
+ },
+ {
+  "cell": 78,
+  "seconds": 0.0,
+  "output": "Maximum Error of the day =  2760.33984375\nMinimum Error of the day =  7.1733691406248\nMean Absolute Error of the day =  [756.5341135152185]\nAverage RTM Price =  3989.9464583333333\nMAPE during 00:00-06:00 hrs =  11.95734952581325\nMAPE during 06:00-12:00 hrs =  22.49845547564474\nMAPE during 12:00-18:00 hrs =  22.06340889151566\nMAPE during 18:00-24:00 hrs =  8.165047204889216\n"
+ },
+ {
+  "cell": 86,
+  "seconds": 11544.1,
+  "output": "Fitting 5 folds for each of 216 candidates, totalling 1080 fits\nBest Params: {'bootstrap': True, 'max_depth': 10, 'max_features': 18, 'min_samples_leaf': 4, 'min_samples_split': 60, 'n_estimators': 700}\nBest Score: 0.5490725803838947\nBest Estimator: RandomForestRegressor(max_depth=10, max_features=18, min_samples_leaf=4,\n                      min_samples_split=60, n_estimators=700)\n"
+ },
+ {
+  "cell": 88,
+  "seconds": 0.1,
+  "output": "Model Performance\nAverage Error: 710.8982 degrees.\nAccuracy = 84.67%.\n"
+ },
+ {
+  "cell": 90,
+  "seconds": 9.6,
+  "output": "Maximum Error of the day =  2639.4054007089776\nMinimum Error of the day =  14.428759194326176\nMean Absolute Error of the day =  [715.1394070731258]\nAverage RTM Price =  3989.9464583333333\nMAPE during 00:00-06:00 hrs =  12.716392250408063\nMAPE during 06:00-12:00 hrs =  21.570789799009585\nMAPE during 12:00-18:00 hrs =  17.92329002366976\nMAPE during 18:00-24:00 hrs =  9.461139450931437\nFull Day MAPE =  15.41790288100471\n"
+ }
+]
