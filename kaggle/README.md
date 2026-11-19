@@ -1,9 +1,16 @@
-# GPU notebook: pretrained time-series models
+# GPU notebook: pretrained and neural time-series models
 
 `foundation_models.ipynb` forecasts the same 150 days, folds and scores as the model comparison on the
-2025-26 window, with two pretrained models used without any training on this data: Chronos-Bolt and
-TimesFM. Each forecast reads only the RTM price history up to the end of the previous day. These models
-use no day-ahead price and no demand input, so they are a univariate reference.
+2025-26 window, one cell per model:
+
+* Chronos-Bolt and TimesFM, pretrained and used without any training on this data. Each forecast reads
+  only the RTM price history up to the end of the previous day. They use no day-ahead price and no
+  demand input, so they are a univariate reference.
+* N-HiTS and TFT, trained in the notebook once per fold on all earlier days. Besides the price history
+  they read the DAM price, the block and the weekday of the day being forecast, which are known in advance.
+
+Every cell saves a checkpoint after each fold and its full predictions as soon as it finishes. Running
+a cell again skips the folds already saved.
 
 The price file is not part of this repository. The market data is private, so the dataset must stay
 private too.
@@ -23,15 +30,16 @@ private too.
    private.
 3. Create a notebook from `foundation_models.ipynb`, attach the dataset, turn on a GPU and turn on internet
    access (the model weights are downloaded when the notebook runs).
-4. Run all cells. The notebook prints the scores for the test period and for each fold, and writes
-   `predictions_chronos_bolt.parquet` and `predictions_timesfm.parquet`.
-5. Download both files into `.project-local/results_window/` and run:
+4. Run the cells in order. Each model cell can be run on its own. The last cells print the scores for the test
+   period and for each fold, and bundle the files into `predictions_bundle.zip`.
+5. Download the `predictions_<model>.parquet` files (or the bundle) into `.project-local/results_window/`,
+   leaving out `predictions_naive_yesterday_check.parquet`, and run:
 
    ```
    python scripts/benchmark_window.py report
    ```
 
-   The report then lists the two models next to the others.
+   The report then lists the four models next to the others.
 
 ## Check before trusting the numbers
 
