@@ -143,3 +143,60 @@ def psp_schema(params: DataParams) -> pa.DataFrameSchema:
             ),
         ],
     )
+
+
+def window_schema(params: DataParams) -> pa.DataFrameSchema:
+    """The joined 2025-26 table: a full 96-block grid, values missing where a source has none."""
+    non_negative = pa.Check.ge(0)
+    near_zero = pa.Check.ge(NEAR_ZERO_FLOOR)
+    volume = pa.Check.in_range(params.bid_min, params.bid_max)
+    columns: dict[str, pa.Column] = {
+        "timestamp": _timestamp_column(),
+        "date": pa.Column(checks=pa.Check(lambda s: s.dt.tz is None, error="date must be naive")),
+        "block": pa.Column(int, pa.Check.in_range(1, BLOCKS_PER_DAY)),
+    }
+    for market in ("rtm", "dam"):
+        columns[f"{market}_price"] = pa.Column(
+            float, pa.Check.in_range(params.price_min, params.price_max), nullable=True
+        )
+        for name in ("purchase_bid", "selling_bid", "mcv", "scheduled_volume"):
+            columns[f"{market}_{name}"] = pa.Column(float, volume, nullable=True)
+        columns[f"{market}_empty"] = pa.Column(bool)
+        columns[f"{market}_missing"] = pa.Column(bool)
+    columns["demand"] = pa.Column(
+        float, pa.Check.in_range(params.demand_min, params.demand_max), nullable=True
+    )
+    # Readings outside 48 to 52 Hz are masked as telemetry loss before this point.
+    columns["frequency"] = pa.Column(float, pa.Check.in_range(48.0, 52.0), nullable=True)
+    for name in ("nuclear", "wind", "gas", "thermal", "net_demand_met", "total_generation"):
+        columns[name] = pa.Column(float, non_negative, nullable=True)
+    for name in ("solar", "hydro", "others", "storage_generation"):
+        columns[name] = pa.Column(float, near_zero, nullable=True)
+    columns["storage_demand"] = pa.Column(float, non_negative, nullable=True)
+    columns["net_exchange"] = pa.Column(float, nullable=True)
+    columns["demand_suspect"] = pa.Column(bool)
+    columns["demand_missing"] = pa.Column(bool)
+    columns["psp_layout"] = pa.Column("Int64", pa.Check.in_range(1, 3), nullable=True)
+    return pa.DataFrameSchema(
+        columns,
+        strict=True,
+        checks=[
+            pa.Check(
+                lambda f: _regular_grid(f["timestamp"]),
+                error="timestamps are not a 15-minute grid",
+            ),
+            pa.Check(_full_days, error="a day does not have 96 blocks"),
+            pa.Check(
+                lambda f: bool((f["demand_missing"] == f["demand"].isna()).all()),
+                error="demand_missing does not match demand",
+            ),
+            pa.Check(
+                lambda f: bool(f.loc[f["demand_suspect"], "demand"].isna().all()),
+                error="a suspect reading kept its demand",
+            ),
+            pa.Check(
+                lambda f: bool(f.loc[f["rtm_empty"], "rtm_price"].isna().all()),
+                error="an empty RTM block kept its price",
+            ),
+        ],
+    )
