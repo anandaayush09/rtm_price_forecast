@@ -21,7 +21,6 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      - run: uv run pytest --cov=rtm_forecast --cov-report=term-missing
       - name: Build the image and check the command line starts in it
         run: |
           docker build -t rtm-forecast .
@@ -30,5 +29,6 @@ jobs:
         run: |
           uv run dvc repro
           git diff --exit-code reports/data_quality.json
+      - run: uv run pytest --cov=rtm_forecast --cov-report=term-missing
       - name: Execute notebooks
         run: uv run python scripts/execute_notebooks.py --check

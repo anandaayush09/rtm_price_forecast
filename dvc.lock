@@ -9,16 +9,16 @@ stages:
       size: 701370
     - path: src/rtm_forecast/cli.py
       hash: md5
-      md5: 4b46f8ebb643d675b074256850df60aa
-      size: 3519
+      md5: 70f1ab27ee471e6486e12b53a8d44b31
+      size: 11446
     - path: src/rtm_forecast/config.py
       hash: md5
-      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
-      size: 3141
+      md5: 82ce6ef9207bbaaab2c433a4494d38b9
+      size: 5664
     - path: src/rtm_forecast/contracts.py
       hash: md5
-      md5: 32a16b2fb18f22f715ab17b24edb3b6a
-      size: 2544
+      md5: 71d9e834209bd7be95e9cde172f22070
+      size: 9220
     - path: src/rtm_forecast/ingest.py
       hash: md5
       md5: 2f5e76d73ba7f2f20ae5936c8689d937
@@ -32,7 +32,7 @@ stages:
           price_min: 0.0
           price_max: 20000.0
           bid_min: 0.0
-          bid_max: 100000.0
+          bid_max: 200000.0
           demand_min: 50000.0
           demand_max: 300000.0
           stale_min_blocks: 4
@@ -62,8 +62,8 @@ stages:
     deps:
     - path: config/holidays.yaml
       hash: md5
-      md5: 0dd33231a12036755d59aec28d8ea002
-      size: 1641
+      md5: f46541fa0926d50c209ab54dea934916
+      size: 3492
     - path: data/interim/clean.parquet
       hash: md5
       md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
@@ -78,12 +78,12 @@ stages:
       size: 735
     - path: src/rtm_forecast/cli.py
       hash: md5
-      md5: 4b46f8ebb643d675b074256850df60aa
-      size: 3519
+      md5: 70f1ab27ee471e6486e12b53a8d44b31
+      size: 11446
     - path: src/rtm_forecast/config.py
       hash: md5
-      md5: 3f7b35523ccf544ba2efe7a7e6557f2d
-      size: 3141
+      md5: 82ce6ef9207bbaaab2c433a4494d38b9
+      size: 5664
     - path: src/rtm_forecast/features.py
       hash: md5
       md5: a190ae44796c0a23bf08511b07a6df54
