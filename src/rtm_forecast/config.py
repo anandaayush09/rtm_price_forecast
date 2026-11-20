@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -150,4 +151,29 @@ def load_window_experiment_params(path: Path = Path("params.yaml")) -> WindowExp
         second_reference=str(section["second_reference"]),
         price_cap=float(section["price_cap"]),
         cap_forecast_share=float(section["cap_forecast_share"]),
+    )
+
+
+@dataclass(frozen=True)
+class ProductionParams:
+    model_dir: Path
+    calibration_path: Path
+    forecast_dir: Path
+    lightgbm: dict[str, Any]
+    seed: int
+    price_cap: float
+
+
+def load_production_params(path: Path = Path("params.yaml")) -> ProductionParams:
+    with path.open(encoding="utf-8") as handle:
+        settings = yaml.safe_load(handle)
+    section = settings["production"]
+    experiment = load_window_experiment_params(path)
+    return ProductionParams(
+        model_dir=Path(section["model_dir"]),
+        calibration_path=Path(section["calibration_path"]),
+        forecast_dir=Path(section["forecast_dir"]),
+        lightgbm=dict(section["lightgbm"]),
+        seed=experiment.seed,
+        price_cap=experiment.price_cap,
     )

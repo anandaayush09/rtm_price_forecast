@@ -77,3 +77,20 @@ window_experiment:
   price_cap: 10000.0
   cap_forecast_share: 0.95
 
+# The final day-ahead model for the 2025-26 window (see src/rtm_forecast/production.py): a cap-aware two-stage LightGBM forecast with
+# prediction intervals corrected by a margin learned on the last 60 days. The LightGBM settings are the ones chosen on the validation
+# days of the comparison (the objective is left out because each stage sets its own). Seed and price cap are those of window_experiment.
+# The saved files come from the published prices, so the folder is not tracked.
+production:
+  model_dir: data/processed/production/model
+  calibration_path: data/processed/production/calibration.parquet
+  forecast_dir: data/processed/production/forecasts
+  lightgbm:
+    n_estimators: 366
+    learning_rate: 0.015474714591384251
+    num_leaves: 18
+    min_child_samples: 44
+    subsample: 0.5391954274687223
+    subsample_freq: 1
+    colsample_bytree: 0.85188635599904
+    reg_lambda: 0.2135238814644748

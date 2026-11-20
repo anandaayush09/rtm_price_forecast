@@ -58,6 +58,8 @@ class Spec:
     cap: float
     asinh_scale: float | None = None
     levels: tuple[float, ...] = LEVELS
+    # demand with the storage load taken out (see window_features.one_demand_definition)
+    one_definition: bool = True
 
     def __post_init__(self) -> None:
         check_levels(np.asarray(self.levels, dtype=float))
@@ -125,6 +127,7 @@ class ProductionModel:
             "cap": self.spec.cap,
             "asinh_scale": self.spec.asinh_scale,
             "levels": list(self.spec.levels),
+            "one_definition": self.spec.one_definition,
             "trained_until": self.trained_until.isoformat(),
             "train_days": self.train_days,
             "train_rows": self.train_rows,
@@ -148,6 +151,7 @@ class ProductionModel:
             cap=manifest["cap"],
             asinh_scale=manifest["asinh_scale"],
             levels=tuple(manifest["levels"]),
+            one_definition=manifest.get("one_definition", True),
         )
         classifier = (
             Booster(model_file=str(folder / "classifier.txt"))
@@ -184,6 +188,23 @@ def fit_production(
     return ProductionModel(
         spec, last, int(train["date"].nunique()), len(train), classifier, regressors
     )
+
+
+def build_calibration(
+    features: pd.DataFrame, spec: Spec, days: Sequence[pd.Timestamp]
+) -> pd.DataFrame:
+    """The forecasts the model would have made on each of ``days``, as the calibration table.
+
+    Every day is forecast by a model fitted on the days before it, with its prices hidden, so
+    the table holds what the model really did, next to the prices that were published.
+    """
+    parts = []
+    for day in days:
+        model = fit_production(features, spec, before=day)
+        rows = features[features["date"] == day]
+        table = rows[["date", "block"]].assign(actual=rows["rtm_price"].to_numpy())
+        parts.append(pd.concat([table, model.raw(rows)], axis=1)[CALIBRATION_COLUMNS])
+    return pd.concat(parts, ignore_index=True)
 
 
 def forecast_day(
