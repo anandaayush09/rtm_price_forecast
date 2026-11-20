@@ -5,13 +5,14 @@ days. Prices are INR/MWh. When a transform is given the model is fit on transfor
 its output is transformed back.
 """
 
-from collections.abc import Sequence
+import hashlib
+from collections.abc import Callable, Sequence
 from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
 from catboost import CatBoostRegressor
-from lightgbm import LGBMRegressor
+from lightgbm import LGBMClassifier, LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Lasso, LassoLars
 from sklearn.preprocessing import StandardScaler
@@ -78,6 +79,148 @@ def catboost_predictor(
         return _back(np.asarray(model.predict(test[list(columns)])), transform)
 
     return predict
+
+
+def _fingerprint(*parts: pd.DataFrame | pd.Series) -> bytes:
+    """A hash of the numbers in the given tables, to tell whether two calls get the same data."""
+    digest = hashlib.blake2b()
+    for part in parts:
+        digest.update(np.ascontiguousarray(part.to_numpy(dtype=float)).tobytes())
+    return digest.digest()
+
+
+def mixture_quantile(
+    p: np.ndarray, quantiles: np.ndarray, grid: np.ndarray, tau: float, cap: float
+) -> np.ndarray:
+    """The ``tau`` quantile of a price that is at ``cap`` with probability ``p`` and otherwise
+    follows a below-cap distribution known through its quantiles.
+
+    ``quantiles`` has one row per block and one column per level in ``grid`` (rising). The
+    mixture puts mass 1 - p below the cap, so the tau quantile is the cap when tau >= 1 - p,
+    and otherwise the quantile of the below-cap part at level tau / (1 - p), read from the
+    fitted levels by linear interpolation (the nearest fitted level beyond the ends).
+    """
+    below_mass = 1.0 - np.asarray(p, dtype=float)
+    inside = tau < below_mass
+    level = np.where(inside, tau / np.where(inside, below_mass, 1.0), 1.0)
+    below = np.array([np.interp(a, grid, row) for a, row in zip(level, quantiles, strict=True)])
+    return np.where(inside, below, cap)
+
+
+def _two_stage_fit(
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+    params: dict[str, Any],
+    seed: int,
+    cap: float,
+    grid: np.ndarray,
+) -> Callable[[pd.DataFrame, pd.DataFrame], tuple[np.ndarray, np.ndarray]]:
+    """A function (train, test) -> (cap probability, below-cap quantiles at ``grid``).
+
+    Fits are cached on a hash of the data, so predictors that share it fit once per day.
+    """
+    cache: dict[bytes, tuple[np.ndarray, np.ndarray]] = {}
+    shared = {k: v for k, v in params.items() if k not in ("objective", "alpha")}
+    base: dict[str, Any] = {
+        "random_state": seed,
+        "n_jobs": THREADS,
+        "deterministic": True,
+        "force_row_wise": True,
+        "verbose": -1,
+    }
+    if grid[0] <= 0.0 or np.any(np.diff(grid) <= 0) or grid[-1] >= 1.0:
+        raise ValueError("levels must rise and stay between 0 and 1")
+
+    def fit(train: pd.DataFrame, test: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+        x_train, x_test = train[list(columns)], test[list(columns)]
+        key = _fingerprint(x_train, train["rtm_price"], x_test)
+        if key not in cache:
+            at_cap = train["rtm_price"].to_numpy(dtype=float) >= cap
+            if at_cap.all():
+                raise ValueError("every training block is at the cap")
+            if at_cap.any():
+                classifier = LGBMClassifier(**base, **shared).fit(x_train, at_cap)
+                p = np.asarray(classifier.predict_proba(x_test))[:, 1]
+            else:
+                p = np.zeros(len(test))
+            below = train[~at_cap]
+            target = _fit_target(below, transform)
+            quantiles = []
+            for level in grid:
+                regressor = LGBMRegressor(**base, **shared, objective="quantile", alpha=level)
+                regressor.fit(below[list(columns)], target)
+                quantiles.append(_back(np.asarray(regressor.predict(x_test)), transform))
+            cache[key] = (p, np.sort(np.stack(quantiles, axis=1), axis=1))
+        return cache[key]
+
+    return fit
+
+
+def cap_aware_predictors(
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+    params: dict[str, Any],
+    seed: int,
+    cap: float,
+    levels: Sequence[float] = (0.5, 0.75, 0.9),
+) -> dict[str, Predictor]:
+    """Two-stage forecasts for prices that sit at the exchange cap in a large share of blocks.
+
+    Stage one is a classifier for "the block settles at the cap" (price >= ``cap``). Stage two is
+    quantile regression on the blocks below the cap only, at each of ``levels``. Two forecasts
+    come out of the same fits, so both predictors share them:
+
+    * ``hard``: the cap when the cap probability p is at least 0.5, else the median below the cap.
+    * ``mixture``: the median of the mixture of the two stages, which is what minimises the mean
+      absolute error (see ``mixture_quantile``).
+
+    ``params`` are LightGBM settings without the objective (the tuned ones of the plain model
+    are reused). The levels must start at 0.5.
+    """
+    grid = np.asarray(levels, dtype=float)
+    if grid[0] != 0.5:
+        raise ValueError("levels must start at 0.5")
+    fit = _two_stage_fit(columns, transform, params, seed, cap, grid)
+
+    def hard(train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
+        p, quantiles = fit(train, test)
+        return np.where(p >= 0.5, cap, quantiles[:, 0])
+
+    def mixture(train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
+        p, quantiles = fit(train, test)
+        return mixture_quantile(p, quantiles, grid, 0.5, cap)
+
+    return {"cap_hard": hard, "cap_mixture": mixture}
+
+
+def cap_aware_interval_predictors(
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+    params: dict[str, Any],
+    seed: int,
+    cap: float,
+    coverages: Sequence[float] = (0.5, 0.9),
+    levels: Sequence[float] = (0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.975),
+) -> dict[str, Predictor]:
+    """Prediction intervals from the two-stage model: for each coverage c, the quantiles of the
+    mixture at (1 - c) / 2 and 1 - (1 - c) / 2. Names are ``lo50``, ``hi50``, ``lo90`` and so on.
+    """
+    grid = np.asarray(levels, dtype=float)
+    fit = _two_stage_fit(columns, transform, params, seed, cap, grid)
+    predictors: dict[str, Predictor] = {}
+    for coverage in coverages:
+        tail = (1.0 - coverage) / 2.0
+        for name, tau in (
+            (f"lo{round(coverage * 100)}", tail),
+            (f"hi{round(coverage * 100)}", 1 - tail),
+        ):
+
+            def predict(train: pd.DataFrame, test: pd.DataFrame, tau: float = tau) -> np.ndarray:
+                p, quantiles = fit(train, test)
+                return mixture_quantile(p, quantiles, grid, tau, cap)
+
+            predictors[name] = predict
+    return predictors
 
 
 def lear_predictor(
