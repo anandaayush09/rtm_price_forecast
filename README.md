@@ -51,6 +51,24 @@ Chronos-Bolt and TimesFM (pretrained, no training on this data), N-HiTS and TFT 
 two-stage cap-aware forecast with intervals. The pretrained and neural models run in a GPU notebook
 ([`kaggle/`](kaggle/README.md)); everything else runs on a CPU.
 
+## How it fits together
+
+```mermaid
+flowchart TD
+    A["IEX RTM and DAM exports<br/>Grid-India demand sheets<br/>holiday lists"] --> B["clean-window<br/>96-block grid, contracts,<br/>quality report"]
+    B --> C["Features<br/>only what is known<br/>when the forecast is made"]
+    C --> D["Benchmark on the same splits<br/>CPU models and the GPU notebook"]
+    D --> E["Significance tests<br/>Diebold-Mariano,<br/>model confidence set"]
+    C --> F["Cap-aware two-stage model<br/>with corrected intervals"]
+    E --> G["Final model"]
+    F --> G
+    G --> H["fit and calibrate<br/>saved model files"]
+    H --> I["forecast --day"]
+    I --> J["csv per day<br/>and the app"]
+    J -->|"prices published"| K["settle<br/>calibration table grows"]
+    K --> H
+```
+
 ## Repository layout
 
 | Path | Contents |
@@ -104,3 +122,8 @@ file or a table of prices.
 ## Limits
 
 See [`LIMITATIONS_AND_FUTURE_SCOPE.md`](LIMITATIONS_AND_FUTURE_SCOPE.md).
+
+## Licence
+
+The code of Phase 2 is under the MIT licence, see [`LICENSE`](LICENSE). The data are not covered by it: see
+`docs/data_card.md`.
