@@ -313,7 +313,7 @@ INDEPENDENT = [
 TUNED = ["lear", "lightgbm", "catboost"]
 
 
-def final(inputs: Inputs, only: list[str]) -> None:
+def final(inputs: Inputs, only: list[str], redo: bool = False) -> None:
     """Forecast every fold day with each model in ``only``; one file of predictions per model.
 
     The simple models and the 2021 models need neither the chosen setup nor the tuned settings,
@@ -354,6 +354,12 @@ def final(inputs: Inputs, only: list[str]) -> None:
     fold_of = {day: k + 1 for k, fold in enumerate(inputs.folds) for day in fold}
     inputs.out.mkdir(parents=True, exist_ok=True)
     for name in only:
+        target = inputs.out / f"predictions_{name}.parquet"
+        marker = inputs.out / f".running_{name}"
+        if (target.exists() or marker.exists()) and not redo:
+            print(f"{name}: already done or running, skipped (use --redo to run again)", flush=True)
+            continue
+        marker.write_text("running", encoding="utf-8")
         started = time.time()
         data, predictor = runs[name]()
         result = rolling_origin(data, days, predictor, name)
@@ -366,7 +372,8 @@ def final(inputs: Inputs, only: list[str]) -> None:
             ["test", "validation"],
             "earlier",
         )
-        result.to_parquet(inputs.out / f"predictions_{name}.parquet", index=False)
+        result.to_parquet(target, index=False)
+        marker.unlink(missing_ok=True)
         print(f"{name}: {time.time() - started:.0f}s", flush=True)
 
 
@@ -400,6 +407,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("stage", choices=["choose", "tune", "final", "report"])
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--redo", action="store_true", help="run models that already have results")
     parser.add_argument(
         "--models",
         nargs="+",
@@ -410,7 +418,7 @@ def main() -> None:
     args = parser.parse_args()
     inputs = Inputs(args.smoke)
     if args.stage == "final":
-        final(inputs, list(args.models))
+        final(inputs, list(args.models), args.redo)
     else:
         {"choose": choose, "tune": tune_all, "report": report}[args.stage](inputs)
 
