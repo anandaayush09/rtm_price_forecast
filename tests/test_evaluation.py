@@ -106,3 +106,28 @@ def test_backtest_rejects_a_wrong_length() -> None:
 
     with pytest.raises(ValueError):
         rolling_origin(_frame(), [pd.Timestamp("2021-01-03")], predictor, "bad")
+
+
+def test_confidence_set_drops_a_clearly_worse_model_and_keeps_equal_ones() -> None:
+    from rtm_forecast.significance import model_confidence_set
+
+    rng = np.random.default_rng(3)
+    shared = rng.normal(100, 8, 80)  # a common day effect, as in real daily losses
+    losses = pd.DataFrame(
+        {
+            "a": shared + rng.normal(0, 1, 80),
+            "b": shared + rng.normal(0, 1, 80),
+            "c": shared + rng.normal(0, 1, 80),
+            "bad": shared + 6 + rng.normal(0, 1, 80),
+        }
+    )
+    result = model_confidence_set(losses, draws=2000, seed=0)
+    assert not result.loc["bad", "in_set"] and result.loc["bad", "elimination_order"] == 1
+    assert result.loc[["a", "b", "c"], "in_set"].all()
+    same = model_confidence_set(losses[["a", "b", "c"]], draws=2000, seed=0)
+    assert same["in_set"].all() and (same["elimination_order"] == 0).all()
+    pair = model_confidence_set(losses[["a", "bad"]], draws=2000, seed=0)
+    assert pair.loc["a", "in_set"] and pair.loc["a", "mcs_p_value"] == 1.0
+    assert not pair.loc["bad", "in_set"]
+    with pytest.raises(ValueError):
+        model_confidence_set(losses[["a"]])

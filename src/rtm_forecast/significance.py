@@ -1,6 +1,7 @@
 """Tests of equal forecast accuracy."""
 
 import numpy as np
+import pandas as pd
 from scipy import stats
 
 
@@ -34,3 +35,67 @@ def bootstrap_difference(
     means = rng.choice(difference, size=(draws, len(difference)), replace=True).mean(axis=1)
     low, high = np.percentile(means, [2.5, 97.5])
     return float(low), float(high)
+
+
+def _block_indices(days: int, draws: int, block: int, rng: np.random.Generator) -> np.ndarray:
+    """Moving-block bootstrap: ``draws`` resamples of ``days`` positions in blocks of ``block``."""
+    starts = rng.integers(0, days - block + 1, size=(draws, -(-days // block)))
+    positions = (starts[:, :, None] + np.arange(block)[None, None, :]).reshape(draws, -1)
+    return positions[:, :days]
+
+
+def model_confidence_set(
+    losses: pd.DataFrame,
+    alpha: float = 0.10,
+    block: int = 5,
+    draws: int = 5000,
+    seed: int = 0,
+) -> pd.DataFrame:
+    """Model confidence set of Hansen, Lunde and Nason (2011) with the maximum-t statistic.
+
+    ``losses`` has one row per day and one column per model. Models are dropped one at a time
+    (the one with the largest t statistic against the average of the models still in) until the
+    hypothesis of equal accuracy is no longer rejected at ``alpha``. The p-value of the bootstrap
+    is taken over moving blocks of ``block`` days, because daily losses are correlated.
+    Returns one row per model: the elimination order (0 for the survivors), the set p-value
+    and whether the model is in the set. A model is in the set when its p-value is at least
+    ``alpha``.
+    """
+    values = losses.to_numpy(dtype=float)
+    days, count = values.shape
+    if count < 2:
+        raise ValueError("a confidence set needs at least two models")
+    rng = np.random.default_rng(seed)
+    resampled = np.stack(
+        [values[index].mean(axis=0) for index in _block_indices(days, draws, block, rng)]
+    )
+    mean = values.mean(axis=0)
+    alive = list(range(count))
+    eliminated: list[int] = []
+    p_values = np.zeros(count)
+    running = 0.0
+    while True:
+        part = np.array(alive)
+        relative = mean[part] - mean[part].mean()
+        relative_boot = resampled[:, part] - resampled[:, part].mean(axis=1, keepdims=True)
+        spread = (relative_boot - relative_boot.mean(axis=0)).std(axis=0, ddof=1)
+        spread = np.where(spread == 0.0, np.inf, spread)
+        statistic = relative / spread
+        worst = int(np.argmax(statistic))
+        boot_max = ((relative_boot - relative_boot.mean(axis=0)) / spread).max(axis=1)
+        p_value = float(np.mean(boot_max >= statistic[worst]))
+        running = max(running, p_value)
+        if len(alive) == 1 or p_value >= alpha:
+            for model in alive:
+                p_values[model] = 1.0 if len(alive) == 1 else running
+            break
+        p_values[alive[worst]] = running
+        eliminated.append(alive.pop(worst))
+    order = np.zeros(count, dtype=int)
+    for step, model in enumerate(eliminated, start=1):
+        order[model] = step
+    result = pd.DataFrame(
+        {"elimination_order": order, "mcs_p_value": p_values}, index=losses.columns
+    )
+    result["in_set"] = result["mcs_p_value"] >= alpha
+    return result.sort_values(["in_set", "mcs_p_value"], ascending=False)
