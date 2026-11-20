@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "RTM price forecast"
+type: software
+version: "0.1.0"
+license: MIT
+authors:
+  - name: "anandaayush09"
+abstract: >-
+  Day-ahead and intraday forecasting of real-time market electricity prices on the Indian Energy Exchange,
+  with a data pipeline, a benchmark of naive, statistical, tree-based, pretrained and neural models, a
+  forecast that accounts for the exchange price cap, and a command line and app for daily use.
+keywords:
+  - electricity price forecasting
+  - real-time market
+  - Indian Energy Exchange
+  - time series
+  - prediction intervals
