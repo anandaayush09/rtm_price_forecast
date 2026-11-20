@@ -12,7 +12,7 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 from catboost import CatBoostRegressor
-from lightgbm import LGBMClassifier, LGBMRegressor
+from lightgbm import Booster, LGBMClassifier, LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Lasso, LassoLars
 from sklearn.preprocessing import StandardScaler
@@ -107,6 +107,66 @@ def mixture_quantile(
     return np.where(inside, below, cap)
 
 
+def two_stage_settings(params: dict[str, Any], seed: int) -> dict[str, Any]:
+    """LightGBM settings shared by the classifier and the quantile regressions."""
+    shared = {k: v for k, v in params.items() if k not in ("objective", "alpha")}
+    return {
+        "random_state": seed,
+        "n_jobs": THREADS,
+        "deterministic": True,
+        "force_row_wise": True,
+        "verbose": -1,
+        **shared,
+    }
+
+
+def check_levels(grid: np.ndarray) -> None:
+    if grid[0] <= 0.0 or np.any(np.diff(grid) <= 0) or grid[-1] >= 1.0:
+        raise ValueError("levels must rise and stay between 0 and 1")
+
+
+def fit_two_stage(
+    train: pd.DataFrame,
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+    settings: dict[str, Any],
+    cap: float,
+    grid: np.ndarray,
+) -> tuple[Booster | None, list[Booster]]:
+    """The cap classifier (None when no training block is at the cap) and one quantile
+    regression per level of ``grid``, fitted on the blocks below the cap."""
+    x_train = train[list(columns)]
+    at_cap = train["rtm_price"].to_numpy(dtype=float) >= cap
+    if at_cap.all():
+        raise ValueError("every training block is at the cap")
+    classifier = LGBMClassifier(**settings).fit(x_train, at_cap).booster_ if at_cap.any() else None
+    below = train[~at_cap]
+    target = _fit_target(below, transform)
+    regressors = [
+        LGBMRegressor(**settings, objective="quantile", alpha=level)
+        .fit(below[list(columns)], target)
+        .booster_
+        for level in grid
+    ]
+    return classifier, regressors
+
+
+def predict_two_stage(
+    classifier: Booster | None,
+    regressors: Sequence[Booster],
+    test: pd.DataFrame,
+    columns: Sequence[str],
+    transform: AsinhTransform | None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """(cap probability, below-cap quantiles with one column per level, sorted across levels)."""
+    x_test = test[list(columns)]
+    p = np.zeros(len(test)) if classifier is None else np.asarray(classifier.predict(x_test))
+    quantiles = np.stack(
+        [_back(np.asarray(booster.predict(x_test)), transform) for booster in regressors], axis=1
+    )
+    return p, np.sort(quantiles, axis=1)
+
+
 def _two_stage_fit(
     columns: Sequence[str],
     transform: AsinhTransform | None,
@@ -120,37 +180,14 @@ def _two_stage_fit(
     Fits are cached on a hash of the data, so predictors that share it fit once per day.
     """
     cache: dict[bytes, tuple[np.ndarray, np.ndarray]] = {}
-    shared = {k: v for k, v in params.items() if k not in ("objective", "alpha")}
-    base: dict[str, Any] = {
-        "random_state": seed,
-        "n_jobs": THREADS,
-        "deterministic": True,
-        "force_row_wise": True,
-        "verbose": -1,
-    }
-    if grid[0] <= 0.0 or np.any(np.diff(grid) <= 0) or grid[-1] >= 1.0:
-        raise ValueError("levels must rise and stay between 0 and 1")
+    settings = two_stage_settings(params, seed)
+    check_levels(grid)
 
     def fit(train: pd.DataFrame, test: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
-        x_train, x_test = train[list(columns)], test[list(columns)]
-        key = _fingerprint(x_train, train["rtm_price"], x_test)
+        key = _fingerprint(train[list(columns)], train["rtm_price"], test[list(columns)])
         if key not in cache:
-            at_cap = train["rtm_price"].to_numpy(dtype=float) >= cap
-            if at_cap.all():
-                raise ValueError("every training block is at the cap")
-            if at_cap.any():
-                classifier = LGBMClassifier(**base, **shared).fit(x_train, at_cap)
-                p = np.asarray(classifier.predict_proba(x_test))[:, 1]
-            else:
-                p = np.zeros(len(test))
-            below = train[~at_cap]
-            target = _fit_target(below, transform)
-            quantiles = []
-            for level in grid:
-                regressor = LGBMRegressor(**base, **shared, objective="quantile", alpha=level)
-                regressor.fit(below[list(columns)], target)
-                quantiles.append(_back(np.asarray(regressor.predict(x_test)), transform))
-            cache[key] = (p, np.sort(np.stack(quantiles, axis=1), axis=1))
+            classifier, regressors = fit_two_stage(train, columns, transform, settings, cap, grid)
+            cache[key] = predict_two_stage(classifier, regressors, test, columns, transform)
         return cache[key]
 
     return fit

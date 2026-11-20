@@ -25,7 +25,7 @@ from benchmark_window import Inputs, read_setup
 
 from rtm_forecast import models
 from rtm_forecast.backtest import rolling_origin
-from rtm_forecast.intervals import conformal_adjust, interval_scores
+from rtm_forecast.intervals import cap_state, conformal_adjust, interval_scores
 
 COVERAGES = (0.5, 0.9)
 WINDOW_DAYS = 60
@@ -88,9 +88,7 @@ def scored_variants(inputs: Inputs) -> pd.DataFrame:
     keys = raw.set_index(["date", "block"]).index
     around = {name: series.reindex(keys).to_numpy() for name, series in points.items()}
     base = raw[["date", "block", "actual", "fold", "period"]].assign(
-        state=np.select(
-            [around["cap_mixture"] >= cap, raw["hi50"] >= cap, raw["hi90"] >= cap], [3, 2, 1], 0
-        ),
+        state=cap_state(around["cap_mixture"], raw["hi50"].to_numpy(), raw["hi90"].to_numpy(), cap),
         below=raw["actual"] < cap,
     )
     parts = []

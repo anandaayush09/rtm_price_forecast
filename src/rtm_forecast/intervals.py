@@ -8,6 +8,14 @@ import numpy as np
 import pandas as pd
 
 
+def cap_state(point: np.ndarray, hi50: np.ndarray, hi90: np.ndarray, cap: float) -> np.ndarray:
+    """How much the model expects the cap, from quantities known when the day is forecast:
+    3 the point forecast is the cap (probability at least 0.5), 2 the upper end of the 50 percent
+    interval is the cap (at least 0.25), 1 the upper end of the 90 percent interval is the cap
+    (at least 0.05), 0 none of these."""
+    return np.select([point >= cap, hi50 >= cap, hi90 >= cap], [3, 2, 1], 0)
+
+
 def _margin(scores: np.ndarray, coverage: float) -> float:
     """The score at rank ceil((n + 1) * coverage) of n scores (the largest if above n)."""
     count = len(scores)
