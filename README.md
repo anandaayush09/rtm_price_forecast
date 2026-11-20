@@ -8,8 +8,9 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 ## Project stages
 
 * **Phase 1 - Baseline.** A 2021 notebook that forecasts one test day (19 Jan 2021) with a random forest and
-  XGBoost on 111 days of 15-minute data. It is kept unchanged in [`original/`](original/), with its forecasts in
-  `original/results/` and its data in `data/raw/price_data.csv`.
+  XGBoost on 111 days of 15-minute data. It is kept in [`original/`](original/) as it was, except that its
+  Colab link now points to this repository. Its forecasts are in `original/results/` and its data in
+  `data/raw/price_data.csv`.
 * **Phase 2 - Extension.** This repository. I rebuilt the work as a data pipeline and a fair benchmark, and I
   turned the best forecast into a command line and an app.
 
