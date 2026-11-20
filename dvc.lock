@@ -17,8 +17,8 @@ stages:
       size: 5664
     - path: src/rtm_forecast/contracts.py
       hash: md5
-      md5: 71d9e834209bd7be95e9cde172f22070
-      size: 9220
+      md5: ec358f918597dcde9faa8d23c28a8ea8
+      size: 9018
     - path: src/rtm_forecast/ingest.py
       hash: md5
       md5: 2f5e76d73ba7f2f20ae5936c8689d937
@@ -50,8 +50,8 @@ stages:
       size: 486654
     - path: src/rtm_forecast/audit.py
       hash: md5
-      md5: 36e51ed9179f2e2612274ab5b0af381b
-      size: 4332
+      md5: c2368d9dfc86a1966f67a7b36f0eab95
+      size: 4229
     outs:
     - path: reports/data_quality.json
       hash: md5
@@ -62,16 +62,16 @@ stages:
     deps:
     - path: config/holidays.yaml
       hash: md5
-      md5: f46541fa0926d50c209ab54dea934916
-      size: 3492
+      md5: a8db390224b4ddff2d20f59d6843841a
+      size: 3421
     - path: data/interim/clean.parquet
       hash: md5
       md5: c8b7d405c0c7dcb1ef907e5b5b17d05d
       size: 486654
     - path: src/rtm_forecast/audit.py
       hash: md5
-      md5: 36e51ed9179f2e2612274ab5b0af381b
-      size: 4332
+      md5: c2368d9dfc86a1966f67a7b36f0eab95
+      size: 4229
     - path: src/rtm_forecast/calendar.py
       hash: md5
       md5: 913785e7acaf99cf0e3360c11ecae8cd
@@ -86,16 +86,16 @@ stages:
       size: 5664
     - path: src/rtm_forecast/features.py
       hash: md5
-      md5: a190ae44796c0a23bf08511b07a6df54
-      size: 5918
+      md5: 8c8df1ac958a9625e2871387386630df
+      size: 5782
     - path: src/rtm_forecast/imputation.py
       hash: md5
-      md5: 40009c864abfbb6a06222e65fb597c18
-      size: 4497
+      md5: 46700f4deec18b619c08dd17d92b8f50
+      size: 4386
     - path: src/rtm_forecast/transforms.py
       hash: md5
-      md5: 4156c18127295694c88dc55c3c2ef48b
-      size: 1171
+      md5: 39a07e9873b440c2f9576e20ae676a31
+      size: 1136
     params:
       params.yaml:
         data.stale_min_blocks: 4
