@@ -1,0 +1,6 @@
+# The app shows forecasts made from published prices, so it only listens on this computer.
+[server]
+address = "localhost"
+
+[browser]
+gatherUsageStats = false
