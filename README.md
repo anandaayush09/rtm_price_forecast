@@ -3,7 +3,8 @@
 Forecasting real-time market (RTM) electricity prices on the Indian Energy Exchange (IEX), one price for each
 15-minute block of the day, from price, bid and demand data.
 
-> Draft. The report with results is still to come, and no price figures from the exchange are published here.
+> Draft. The structure of the [report](docs/report.md) is written and its results sections are still to come.
+> No price figures from the exchange are published here.
 
 ## Project stages
 
