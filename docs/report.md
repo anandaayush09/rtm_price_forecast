@@ -60,17 +60,67 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **Why.** A forecast is only as good as the table behind it, and Phase 1 had no contract that its data had to meet.
 * **What I did.** Typed loaders and contracts for the exchange exports and the demand sheets, a full grid of 96 blocks per
   day, and a data-quality report for each run. The steps run through DVC and read their settings from `params.yaml`.
-* **What I found.** **[to be filled]** Counts of missing and suspect values, the changes in the demand sheet layout,
-  and what the audit led me to change.
-* **What I understand.** **[to be filled]**
+* **What I found.** I audited two data sets. The counts are in the [data card](data_card.md) and in `reports/`.
+  * **2020-21 data (Phase 1), 111 days, 10656 blocks.** Twelve RTM values are missing. They are always the three RTM
+    columns together and always two blocks in a row: six gaps, each starting on an odd block. That is what a missing
+    half-hour looks like, so I suspect that the RTM clears every 30 minutes, but I have not checked this against the
+    exchange rules. No RTM price repeats for more than two blocks in a row, so I see no sign of a stuck price feed.
+  * The two bid columns hold values from about 199 to 26787. That is too large and too regular for prices, so I read
+    them as volumes in MW. My first draft of the data contract treated them as prices and failed on the real file,
+    which is how I noticed.
+  * Demand is the weak column. It has 16 runs of four or more identical values (359 rows, the longest 87 blocks, about
+    22 hours), and three pairs of days share exactly the same 96 values. From 1 to 15 October the daily maximum stays
+    between 171594 and 171833 MW, which measured demand does not usually do. I cannot tell the cause from the file.
+  * **2025-26 window, 365 days, 35040 blocks.** RTM has 14 blocks missing, in two runs of consecutive blocks. DAM has
+    none missing. Demand has 104 blocks missing and 6 flagged as suspect. The demand sheet changed layout twice during
+    the year, so there are three layouts, with storage columns in the later two, and the demand figure counts storage
+    load from mid-2026.
+  * **What the audit made me change.** The data contract has separate bounds for prices, bids and demand. A block where
+    every exchange value is zero is set to missing. A demand reading that cannot be physical is set to missing, and one
+    that looks wrong but passes the rules is flagged and kept. The models use demand without storage load, so that it
+    means the same thing all year. The assumptions behind these rules are listed in the data card and in the limitations.
+* **What I understand.** A model is only as good as the table behind it, and here the table had problems that I could
+  see only because the checks failed or the values looked wrong. Prices are nearly complete in both data sets. Demand
+  is not, and its definition changes. I keep every row, mark the doubtful ones and test the models with and without
+  demand, instead of repairing values by guessing. Several of the choices (zero everywhere means missing, a reading
+  that cannot be physical, the day a demand report describes) are assumptions that I could not confirm from the files.
 
 ### 2.2 Exploration
 
 * **Why.** To see which patterns a model can use, and which breaks it must live with.
 * **What I did.** Daily and weekly profiles, the gap between the DAM and RTM prices, autocorrelation, a seasonal
-  decomposition, volatility clusters, the relation to demand, and the price cap.
-* **What I found.** **[to be filled]**
-* **What I understand.** **[to be filled]**
+  decomposition, volatility, the relation to demand and the spikes, on the 2020-21 data in notebook 02. I did the same
+  kind of exploration on the 2025-26 window, including the price cap.
+* **What I found.** The figures below are from the 2020-21 data. I have not yet checked the exchange's terms of use, so
+  I do not publish figures from the 2025-26 window.
+  * **Daily and weekly shape.** Prices have two peaks a day, in the late morning and the early evening. On weekdays the
+    lowest average RTM price is in block 16 (2083 INR/MWh) and the highest in block 74 (4144). Only Sunday is a low
+    day: its mean RTM price is 2550, while Saturday (2891) is close to the weekdays (2784 to 2963). My first notebook
+    flagged Saturday and Sunday together, which hides this.
+  * **Levels move.** The mean RTM price rises from 2691 in October to 2981 in January, and its standard deviation
+    from 664 to 1030. The mean daily standard deviation is 528 in the first half of the window and 786 in the second.
+    The last day, 19 January 2021, which my first notebook used as its single test day, has the highest mean price of
+    the 111 days (3990) and the third highest daily standard deviation (1476).
+  * **RTM against DAM.** RTM is above DAM in 59.0 percent of blocks. The mean gap is 48 INR/MWh, the median 83 and
+    the standard deviation 594, so the gap is small on average and large in single blocks. The two prices have a
+    correlation of 0.721. In January the RTM price is on average below the DAM price (gap -103), in the other months
+    above it.
+  * **Memory.** The autocorrelation is 0.936 at 15 minutes, 0.777 at one hour and 0.561 at two hours, then rises again
+    to 0.660 at one day and is 0.409 at one week. In the partial autocorrelation only lag 1 is large. A decomposition
+    into trend, daily pattern and remainder gives a daily seasonal strength of 0.689 and a trend strength of 0.454.
+  * **Demand.** After I leave out the first 15 days and the repeated-value runs, 8857 of the 10656 rows remain. Demand
+    has a correlation of 0.688 with the RTM price and 0.784 with the DAM price. By hour of day the correlation with
+    the RTM price is strongest at hour 9 (0.69) and weakest at hour 22 (0.24).
+  * **Spikes.** 268 blocks lie above 5292 INR/MWh (the mean plus three standard deviations), on 42 days. Most fall in
+    hours 8 to 10 (92 blocks) and hours 17 to 19 (142 blocks). December has 106 of them and January 96, although
+    January has only 19 days in the data.
+  * **2025-26 window, including the price cap.** **[to be filled after the terms-of-use check]**
+* **What I understand.** The market has a clear daily shape, a Sunday dip, rising volatility and spikes in two daily
+  windows. The DAM price of the same block and yesterday's RTM price at the same block are the most informative
+  inputs I have, and a good model has to do more than copy either. Rising volatility means that a test period near
+  the end of a window is harder than one near the start, and one test day, especially 19 January, is not a fair test.
+  That is why step 2.5 evaluates over many days. These findings come from 111 days of one autumn and winter, so I do
+  not assume that they hold for the 2025-26 window.
 
 ### 2.3 Check of Phase 1
 
