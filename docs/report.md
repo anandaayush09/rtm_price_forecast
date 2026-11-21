@@ -148,18 +148,24 @@ See [`LIMITATIONS_AND_FUTURE_SCOPE.md`](../LIMITATIONS_AND_FUTURE_SCOPE.md).
 
 ## Appendix A. Phase 1: inconsistencies, defects and fixes
 
-**[to be filled from the check of Phase 1]** One row per item, with where it is, what is wrong, how I fixed it, and
-the effect of the fix on the scores.
+One row per item: where it is, how I fixed it, and the effect of the fix. All scores are on the single test day of
+Phase 1 (19 Jan 2021, 96 blocks, 92 training days) and in INR/MWh; MAPE is the mean absolute percentage error. One day
+cannot rank models, so I read each effect as a size, not as a result. Same block yesterday scores MAE 431.57 and MAPE
+10.98 on that day, better than every row below. The numbers come from notebook 03 and from the two files in
+`results/` that it reads.
 
-| Item | Where | Effect of the fix |
-|---|---|---|
-| Dates read with the month first | data loading | [to be filled] |
-| Weekend flags | feature construction | [to be filled] |
-| Random forest without a seed | model fitting | [to be filled] |
-| A function used but never defined | evaluation | [to be filled] |
-| An error sum that leaves out one block | evaluation | [to be filled] |
-| Cross-validation by plain K folds on a time series | tuning | [to be filled] |
-| Accuracy figure in the README that does not match the output | README | [to be filled] |
+| Item | Where | Fix | Effect of the fix |
+|---|---|---|---|
+| Dates read with the month first: 44 of 111 dates were read wrongly, for example 01-10-2020 as 10 January | data loading | Read the dates day first | XGBoost MAPE 16.17 to 14.10 (MAE 757.87 to 650.14). Random forest MAPE, mean of five seeds, 15.37 to 14.70 (MAE 711.96 to 678.94) |
+| Weekend flags: computed from the wrongly read dates, so 19 days had the wrong Saturday or Sunday flag. Of the six holiday dates, 2 Oct only exists in the data when the dates are read correctly | feature construction | Fixed by the date fix | Included in the date row, I did not separate it. Dropping the holiday flag as well gives XGBoost 13.88 and random forest 14.44, but one day cannot say whether the flag hurts |
+| Random forest without a seed | model fitting | Fix the seed and average over several | Across five seeds the MAPE moves between 15.28 and 15.47, and my 2021 value (15.32) lies inside. In the rerun in the 2021 environment the grid picks `min_samples_split` 60 instead of 36, the full-day MAPE is 15.418 instead of 15.322, and a block of the forecast moves by up to 129.35 |
+| A function used but never defined (`evalute_model`, called in cell 90) | evaluation | Write the function the cell evidently meant | No effect on the XGBoost numbers, which I reproduce exactly. The random forest values printed by that cell are reproduced only approximately |
+| An error sum that leaves out one block | evaluation | Sum over all 96 blocks | The printed daily error is too low by 1.34 for XGBoost (756.53 against 757.87) and by 1.32 for the random forest (707.45 against 708.77) |
+| Cross-validation by plain K folds on a time series | tuning | Forward-chaining folds | The default folds reproduce my 2021 winner (learning rate 0.07, score -288694.97, MAPE 16.171). Forward chaining picks learning rate 0.06 with a worse score (-310720.03) and a test-day MAPE of 15.617 (MAE 730.07). The worse score is expected, since early folds have little to train on |
+| Accuracy figure in the README that does not match the output | README | State the figure that the saved forecasts give | The README says about 85 percent for both models. The saved forecasts give 84.68 for the random forest and 83.83 for XGBoost, as 100 minus MAPE |
+
+Besides these, 27 of the 39 printed values of the original notebook are identical when I rerun it unchanged in the
+2021 environment. The other 12 all belong to the random forest, which had no seed.
 
 ## Appendix B. How I checked the work
 
