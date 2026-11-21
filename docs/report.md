@@ -238,10 +238,29 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **What I did.** A package with tests and typed code, a command line to fit, calibrate, forecast and settle a day, an
   app that shows the forecast and the record of recent days, continuous integration, and a Docker image that never
   contains data.
-* **What I found.** On a fresh clone the install from the lock file, the checks and the tests pass, the pipeline
-  rebuilds its report identically, and the notebooks run. The saved model reproduces the backtest forecasts of the
-  days I checked. I have not forecast a day after the last day in the data.
-* **What I understand.** **[to be filled]**
+* **What I found.**
+  * **Fresh clone.** The install from the lock file works, the linter, the formatter and the type checker report
+    nothing, and 156 tests pass with 96 percent line coverage, after the data pipeline has run. The pipeline rebuilds
+    `reports/data_quality.json` identically, and the five notebooks run.
+  * **One definition of the model.** The fit and predict steps of the two-stage model are public functions, and the
+    backtest uses the same ones as the daily command line, so there is one implementation of the model.
+  * **The saved model against the backtest.** I refitted on all days before 29, 30 and 31 October 2026 and compared the
+    point forecast and the corrected 50 and 90 percent intervals with the backtest. The difference was 0.0. Running the
+    daily commands on the real window gave the same result, with the price of the last day hidden and then settled, and
+    the calibration table matched the backtest table on all 61 days. The model files are text files with a manifest of
+    checksums, and nothing is pickled.
+  * **Docker.** The image builds, the command line starts in it, and it holds no data. The app answers on this computer
+    and not on the network address. The fit inside the container on the mounted window (358 days) gives forecasts
+    that equal those fitted on Windows to four decimals on 2880 blocks, although the model files differ byte by byte.
+    The image is 4.62 GB, because the command line imports libraries that the production path does not use.
+  * **What I have not done.** I have not forecast a day after the last day in the data. The continuous integration
+    step that builds the image and the workflow that publishes it on a version tag have not run on GitHub.
+* **What I understand.** The model I evaluated is the model the command line runs, and the saved files reproduce its
+  backtest forecasts on the days I checked, which is what I needed before trusting the daily loop. It is still a check
+  of the past: whether the loop holds up on a day that comes after the data, including the margins that it learns from
+  its own earlier forecasts, can only be shown by running it on new days, and I have not. The size of the image is a
+  cost of how the code is organised, not of the model. Loading the heavy libraries only where they are used should
+  make it smaller, but I have not tried it.
 
 ## 3. Conclusion
 
