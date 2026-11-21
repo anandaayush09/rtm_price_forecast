@@ -51,8 +51,9 @@ together with the report.
   the effect of an order on the price.
 * The app runs on one computer and reads local files. The Docker image is large, because the command line imports
   libraries that the production path does not need.
-* I have not checked the exchange's terms of use, so this repository publishes no price figures and no result
-  tables derived from them.
+* The exchange's terms of use limit its content to personal, non-commercial use and do not allow copying or
+  distributing it without permission (see the data card). This repository therefore publishes no 2025-26 price
+  figures and no result tables derived from them. I have not checked the terms of the other sources.
 
 ## Future scope
 
@@ -64,4 +65,4 @@ together with the report.
 * Add state holidays, and handle the change in the demand definition explicitly.
 * Watch the share of blocks at the cap over time, and run the daily commands on a schedule.
 * Slim the image by loading the heavy libraries only where they are used.
-* Publish the app and the result tables once the exchange's terms of use allow it.
+* Publish the app and the result tables once the exchange allows it.

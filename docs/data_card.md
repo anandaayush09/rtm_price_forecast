@@ -25,8 +25,22 @@ A block is 15 minutes, so a day has 96 blocks.
 * **The 2020-21 file.** `data/raw/price_data.csv` comes with the 2021 notebook. Its 2021 README names the IEX
   website for prices and bids and the Vidyut Pravah site for demand.
 
-I have not checked the terms of use of any of these sources. The 2025-26 files are therefore not in the repository,
-and no price figures from them are published here.
+See Terms of use below for what I have and have not checked. The 2025-26 files are not in the repository, and no
+price figures from them are published here.
+
+## Terms of use
+
+* **IEX.** I read the Terms of Uses on www.iexindia.com on 21 November 2026. They say that the content of the
+  website belongs to IEX and its licensors, that it may be used for personal, non-commercial purposes only, that it
+  must not be downloaded, copied, extracted or distributed unless IEX expressly allows it, and that IEX must be
+  credited as the source. I found no separate market-data licence. I do not read the terms as permitting a public
+  repository to hold files or tables of exchange prices, so I publish none for 2025-26, and I do not know whether the
+  2020-21 file that came with the 2021 project may stay here. Everything else here is my own code, tests and
+  descriptions.
+* **Grid-India and the holiday lists.** I have not checked the terms of the daily power supply position reports or of
+  the government holiday memoranda.
+* **Source of the data.** The IEX data come from the exchange. This project is not affiliated with it and is not
+  endorsed by it.
 
 ## Conventions
 
@@ -82,4 +96,4 @@ long runs of identical values that I treat as unreliable.
 
 The data serve one purpose here: comparing forecasts of the RTM price, and building a day-ahead forecast from the
 best of them. Do not read the models' forecasts as advice on bidding. If you rebuild the 2025-26 table, get the
-files from the sources yourself and check their terms of use first.
+files from the sources yourself and read their terms of use first, which for IEX allow personal, non-commercial use.

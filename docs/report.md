@@ -1,8 +1,8 @@
 # Forecasting real-time electricity prices on the Indian Energy Exchange
 
 Report on Phase 2. This is the structure of the report. Sections marked **[to be filled]** wait for results that
-come from exchange prices, which I publish only after I have checked the exchange's terms of use. Sections without
-a mark are written.
+come from exchange prices, which I publish only if the exchange allows it (see the [data card](data_card.md)).
+Sections without a mark are written.
 
 ## Summary
 
@@ -91,8 +91,8 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **What I did.** Daily and weekly profiles, the gap between the DAM and RTM prices, autocorrelation, a seasonal
   decomposition, volatility, the relation to demand and the spikes, on the 2020-21 data in notebook 02. I did the same
   kind of exploration on the 2025-26 window, including the price cap.
-* **What I found.** The figures below are from the 2020-21 data. I have not yet checked the exchange's terms of use, so
-  I do not publish figures from the 2025-26 window.
+* **What I found.** The figures below are from the 2020-21 data. The exchange's terms of use do not allow me to copy or
+  distribute its content without permission, so I do not publish figures from the 2025-26 window.
   * **Daily and weekly shape.** Prices have two peaks a day, in the late morning and the early evening. On weekdays the
     lowest average RTM price is in block 16 (2083 INR/MWh) and the highest in block 74 (4144). Only Sunday is a low
     day: its mean RTM price is 2550, while Saturday (2891) is close to the weekdays (2784 to 2963). My first notebook
@@ -114,7 +114,7 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   * **Spikes.** 268 blocks lie above 5292 INR/MWh (the mean plus three standard deviations), on 42 days. Most fall in
     hours 8 to 10 (92 blocks) and hours 17 to 19 (142 blocks). December has 106 of them and January 96, although
     January has only 19 days in the data.
-  * **2025-26 window, including the price cap.** **[to be filled after the terms-of-use check]**
+  * **2025-26 window, including the price cap.** **[to be filled if the exchange allows publication]**
 * **What I understand.** The market has a clear daily shape, a Sunday dip, rising volatility and spikes in two daily
   windows. The DAM price of the same block and yesterday's RTM price at the same block are the most informative
   inputs I have, and a good model has to do more than copy either. Rising volatility means that a test period near
