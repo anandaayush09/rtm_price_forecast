@@ -154,8 +154,45 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **What I did.** Gap filling compared on hidden gaps, a variance-stabilising transform compared with raw prices,
   calendar and holiday inputs, lags of price, demand, wind and solar, and tests that change future values and check
   that no input moves.
-* **What I found.** **[to be filled]**
-* **What I understand.** **[to be filled]**
+* **What I found.** The figures are from the 2020-21 data in notebook 04. The 2025-26 table is built by the same
+  code, with the holiday lists of 2025 and 2026.
+  * **Filling gaps.** My first notebook filled the 12 missing RTM values with the previous block. I hid 1500 known
+    values at a time, filled them and measured the error. For gaps of two blocks, a straight line gives a mean error
+    of 163.28 against 215.85 for the previous block, and for gaps of eight blocks 230.57 against 360.53. Yesterday's
+    value in the same block is clearly worse (426.71 and 423.68). Each method sees only values up to the end of the day
+    that holds the gap, because a forecast for tomorrow may use today's filled values but must not look into tomorrow.
+  * **The transform.** The prices have a long right tail (skew 1.621 over all days). The arcsinh transform is close to
+    a logarithm for these prices. I compared scales on the first 90 days only, so that the choice does not look at
+    later days. A scale of 1000 brings the skew on those days from 1.532 to 0.041, the plain logarithm gives -0.386,
+    and every scale up to 1000 removes most of the skew. I keep arcsinh because it also works for zero and negative
+    prices. The transform can be undone exactly (largest round-trip error 1.8e-12). Whether it helps a model is a
+    question for step 2.5.
+  * **Holidays.** The first notebook's list left out 30 November (Guru Nanak's Birthday), included 31 December, which
+    is not on the central government list, and labelled 30 October "Good Friday", although that day is Milad-un-Nabi
+    and Good Friday was on 10 April. The new lists come from the Department of Personnel and Training. I read the
+    memoranda for 2025 and 2026 in full. For 2020 I used a reproduction of the memorandum and did not open the
+    original. The lists cover central government holidays only.
+  * **Demand.** 2087 demand rows are not trusted: the first 15 days (1440 rows), runs of four or more identical values
+    (359 rows) and the second day of each pair of identical days (288 rows). The feature builder sets them to missing,
+    so that a model never sees them, unless I ask for the published values.
+  * **The table.** One row per day and block, from 8 October 2020 to 19 January 2021 (9984 rows), with the first seven
+    days used only to build lags. The inputs are the DAM price and volumes of the forecast day and simple summaries of
+    that day's DAM prices, the RTM price and bids of the previous day and of the same day a week earlier, the previous
+    day's mean and spread of RTM prices, yesterday's RTM minus DAM price, demand a day and a week earlier, and the
+    block, the day of the week and a holiday flag. Eight rows have no published target and are kept with a flag, so
+    that models do not train on them.
+  * **First look at the inputs.** By rank correlation with the price, the DAM price of the same block (0.772) and
+    yesterday's RTM price (0.764) are the strongest, followed by demand a day earlier (0.730) and the DAM purchase
+    volume (0.726). The DAM selling volume has the strongest negative one, about -0.7. This is not a model.
+  * **No look-ahead.** The tests scramble everything a forecaster could not yet know (RTM and demand from the forecast
+    day on, DAM after it) and check that the inputs of the forecast day do not change, for three days. They also check
+    that a gap fill never looks into the next day, and I confirmed that these tests fail when the fill does look ahead.
+* **What I understand.** Straight-line filling beats the previous-block fill, so the first notebook's way of handling
+  gaps was not the best one. The scale of the transform matters little, and I keep arcsinh for its behaviour at zero.
+  Demand needs care: it is the least reliable input and its definition changes, so I compare models with and without
+  it in step 2.5. The correlations only say which inputs are worth trying. The tests are the evidence for the claim
+  that every input is known when the forecast is made, but they cover three days of the 2020-21 table and, for the
+  2025-26 inputs, a changed-day test on a synthetic window, not every day. I treat that claim as checked, not proved.
 
 ### 2.5 Benchmark and tuning
 
