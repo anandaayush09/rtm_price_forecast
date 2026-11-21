@@ -77,8 +77,26 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **Why.** Before I compare with Phase 1, I need to know what it computed.
 * **What I did.** A faithful port with a test for every number the 2021 notebook printed, a rerun in a pinned 2020
   environment, and each defect fixed on its own so that I could measure its effect. Naive forecasts on the same day.
-* **What I found.** **[to be filled]** The table of defects is in Appendix A.
-* **What I understand.** **[to be filled]**
+* **What I found.** The table of defects, with the effect of each fix, is in Appendix A. The scores below are on the
+  one test day of Phase 1 (19 Jan 2021), in INR/MWh.
+  * My 2021 forecasts, read from the saved files, score MAE 708.77 and MAPE 15.32 for the random forest and MAE 757.87
+    and MAPE 16.17 for XGBoost. The 2021 README called this about 85 percent accuracy. As 100 minus MAPE the files give
+    84.68 and 83.83.
+  * Of three forecasts that use no model, two score well. The same block yesterday (MAE 431.57, MAPE 10.98) is better
+    than both models on both measures, and it stays better in every variant of the inputs that I tried. The DAM price
+    (MAE 597.38, MAPE 15.89) has a lower MAE than both models and a lower MAPE than XGBoost. The same block last week
+    does not (MAE 1088.43, MAPE 21.83).
+  * Rerun unchanged in the 2021 environment, the data preparation and the XGBoost search and evaluation print the same
+    values as in 2021, and the XGBoost forecasts are equal to the saved ones. The 12 differing values all belong to the
+    random forest, which had no seed.
+  * Reading the dates day first changes the XGBoost MAPE by about two points (16.17 to 14.10). That is more than the
+    gap between my two models in 2021 (15.32 against 16.17).
+* **What I understand.** On this one day none of my models beat yesterday's price, so the 2021 claim of about 85
+  percent accuracy says little: a forecast that copies the day before does better on the same measure. The defects
+  change the scores by more than the gap I reported between the models. With the dates read correctly XGBoost scores a
+  lower MAPE than the random forest (14.10 against 14.70), the opposite of 2021. One day cannot rank models either way,
+  so I draw no conclusion about which model is better from it. What I take from this step is the method: fix the date handling, put the simple
+  forecasts next to every model as baselines, and evaluate over many days. Steps 2.4 and 2.5 do this.
 
 ### 2.4 Preprocessing and features
 
