@@ -3,8 +3,10 @@
 Forecasting real-time market (RTM) electricity prices on the Indian Energy Exchange (IEX), one price for each
 15-minute block of the day, from price, bid and demand data.
 
-> Draft. The structure of the [report](docs/report.md) is written and its results sections are still to come.
-> No price figures from the exchange are published here.
+> The [report](docs/report.md) covers the data audit, the exploration, the check of Phase 1, the features, the
+> comparison of models on the 2020-21 data, and the engineering. The results on the 2025-26 window are not published:
+> the exchange's terms of use do not allow me to copy or distribute its content without permission (see
+> [Data](#data)).
 
 ## Project stages
 
@@ -20,7 +22,7 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 1. **Data pipeline and audit.** Typed loaders with contracts, a full 96-block grid per day, and a data-quality
    report for every run (`reports/`). The steps run through DVC (`dvc.yaml`, `params.yaml`).
 2. **Exploration.** Daily and weekly profiles, the gap between the day-ahead (DAM) and real-time prices,
-   seasonality, volatility and the price cap (`notebooks/`).
+   seasonality, volatility and spikes, shown on the 2020-21 data (`notebooks/`).
 3. **Check of Phase 1.** A faithful port with a test for every number the 2021 notebook printed, a rerun in a
    pinned 2020 environment (`repro2020/`), and each defect fixed on its own with its effect measured.
 4. **Preprocessing and features.** Gap filling compared on hidden gaps, a variance-stabilising transform,
@@ -43,7 +45,7 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 
 Both tasks are scored on the same data: a 2025-26 window (1 Nov 2025 to 31 Oct 2026, 365 days, 35040 blocks)
 with 268 training days, 30 validation days and 60 test days, plus five rolling folds of 30 days as a check. The
-price cap is 10000 INR/MWh.
+price cap is 10000 INR/MWh. The report also compares nine models on the 111 days of 2020-21, with 21 test days.
 
 ## Models compared
 
@@ -79,20 +81,24 @@ flowchart TD
 | `app/` | the Streamlit app |
 | `config/`, `params.yaml` | holiday lists with their sources, all settings |
 | `notebooks/` | executed notebooks: audit, exploration, Phase 1 check, preprocessing, model comparison |
-| `scripts/` | the benchmark, significance, interval and model-card scripts for the 2025-26 window |
+| `scripts/` | the benchmark, significance, interval and model-card scripts (2020-21 and 2025-26), and the checks of Phase 1 |
 | `kaggle/` | the GPU notebook |
 | `tests/` | the tests |
-| `reports/`, `docs/figures/` | data-quality reports (counts only) and figures |
-| `results/old_window/` | results on the 2020-21 data of Phase 1 |
+| `docs/` | the [report](docs/report.md), the [data card](docs/data_card.md) and the figures |
+| `reports/` | data-quality reports (counts only) |
+| `results/` | results on the 2020-21 data, and the records of the check of Phase 1 |
+| `pipelines/`, `dvc.yaml`, `.dvc/` | the data pipeline for each data set |
+| `.github/workflows/` | continuous integration and the release workflow |
 | `original/`, `repro2020/` | Phase 1 as it was, and its rerun in the 2020 environment |
 | `Dockerfile`, `docker-compose.yml` | the image for the command line and the app |
+| `LICENSE`, `CITATION.cff` | the licence and how to cite this work |
 
 ## Getting started
 
 ```
 uv sync
-uv run pytest
 uv run dvc repro          # rebuilds the 2020-21 data tables and the quality report
+uv run pytest             # some tests read the tables that dvc repro builds
 ```
 
 ## Forecasting a day
@@ -117,9 +123,16 @@ docker compose up app                         # then open http://localhost:8501
 
 ## Data
 
-The exchange files and the demand reports are not included, and I do not redistribute them. `docs/data_card.md`
-names the sources and describes what I did with them. Check the terms of use of each source before you share a
-file or a table of prices.
+The exchange files and the demand reports of 2025-26 are not included, and I do not redistribute them.
+`docs/data_card.md` names the sources and describes what I did with them. The exchange's terms of use limit its
+content to personal, non-commercial use and do not allow copying or distributing it without permission, which is
+why this repository holds no price figures from 2025-26. I have not checked the terms of the other sources. The
+2020-21 file in `data/raw/` came with the 2021 project. Read the terms of use of each source before you share a file
+or a table of prices.
+
+## Citing
+
+See [`CITATION.cff`](CITATION.cff).
 
 ## Limits
 
@@ -128,4 +141,5 @@ See [`LIMITATIONS_AND_FUTURE_SCOPE.md`](LIMITATIONS_AND_FUTURE_SCOPE.md).
 ## Licence
 
 The code of Phase 2 is under the MIT licence, see [`LICENSE`](LICENSE). The data are not covered by it: see
-`docs/data_card.md`.
+`docs/data_card.md`. `original/` and `data/raw/` come with the 2021 project and are not part of what the licence
+covers.

@@ -1,7 +1,6 @@
 # Limitations and future scope
 
-This page lists what the work does not show, and what I would do next. It is a draft and will be revised
-together with the report.
+This page lists what the work does not show, and what I would do next.
 
 ## Limitations
 

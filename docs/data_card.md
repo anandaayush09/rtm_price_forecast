@@ -1,6 +1,6 @@
 # Data card
 
-What data the project uses, where it comes from, and what I did to it. This is a draft.
+What data the project uses, where it comes from, and what I did to it.
 
 ## Summary
 

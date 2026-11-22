@@ -1,8 +1,9 @@
 # Forecasting real-time electricity prices on the Indian Energy Exchange
 
-Report on Phase 2. This is the structure of the report. Sections marked **[to be filled]** wait for results that
-come from exchange prices, which I publish only if the exchange allows it (see the [data card](data_card.md)).
-Sections without a mark are written.
+Report on Phase 2. Sections marked **[to be filled]** wait for results on the 2025-26 window, which come from exchange
+prices that I publish only if the exchange allows it (see the [data card](data_card.md)). The summary and the
+conclusion are marked because they depend on those results. Sections without a mark are written; they use the
+2020-21 data for the figures and the counts of the 2025-26 window for the data audit.
 
 ## Summary
 
