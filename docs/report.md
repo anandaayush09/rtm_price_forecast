@@ -246,13 +246,93 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 
 * **Why.** To compare simple and complex models on the same footing.
 * **What I did.** Naive forecasts, LEAR, MSTL with exponential smoothing, LightGBM, CatBoost, the two Phase 1 models,
-  Chronos-Bolt and TimesFM (pretrained), and N-HiTS and TFT (trained per fold), on the same splits.
-* **What I found.** **[to be filled]**
-  * Table R1: day-ahead scores on the test days, one row per model (MAE, RMSE, rMAE, cap F1).
-  * Table R2: the same on the validation days, marked as optimistic for tuned models.
-  * Table R3: the five rolling folds.
-  * Table R4: intraday scores for the leads 1, 2, 4 and 8.
-* **What I understand.** **[to be filled]**
+  Chronos-Bolt and TimesFM (pretrained), and N-HiTS and TFT (trained per fold), on the same splits. On the 2020-21 data
+  I ran nine of them: three naive forecasts (yesterday, last week, the DAM price), LEAR, MSTL, LightGBM, CatBoost and the
+  two Phase 1 models (refitted under this protocol). The 104 forecast days are split in time: the 21 last days (30 December 2020 to 19
+  January 2021) are the test days, the 14 days before them (16 to 29 December) are validation days, and the rest are
+  training days. Every choice was made on the validation days, and the test days were forecast once, after all choices
+  were fixed. Each model is refitted every day on all earlier days with a published price.
+* **What I found.**
+  * **2020-21 data, 21 test days (notebook 05).** Prices are in INR/MWh, and rMAE is the MAE divided by that of the
+    same block last week.
+  * **Choices on the validation days.** I compared settings with LightGBM at fixed parameters, three seeds each. The
+    arcsinh transform lowered the mean error from 411.40 to 395.01. Leaving the demand inputs out gave 389.39, against
+    395.01 with them and 395.14 with demand as published. The seed ranges overlap, so this is a judgement: demand does
+    not clearly help in this window, and its early values are unreliable, so I dropped it there. Removing the calendar
+    group hurt most (451.83), then the day-ahead inputs (423.60) and the RTM lags (407.51).
+  * **Tuning.** LightGBM, CatBoost and LEAR got 30 Optuna trials each on the validation days. The best trial scored
+    377.40 (LightGBM), 373.29 (CatBoost) and 401.02 (LEAR). The median trial of the two tree models scored 383.72 and
+    383.33, so the search gained about 6 to 10 over a typical setting. The best LEAR penalty (0.0001) is tiny, which
+    means almost no shrinkage.
+
+    ![Figure 13: Best validation error so far over the 30 tuning trials of LightGBM, CatBoost and LEAR](figures/05_tuning.png)
+
+    *Figure 13. Best validation MAE so far, by trial.*
+  * **Scores on the test days (Table O1).** The validation scores are optimistic, because the models were tuned on
+    those days, so I do not use them to rank the models.
+
+    | Model | MAE | RMSE | MAPE | rMAE |
+    |---|---|---|---|---|
+    | LEAR | 412.43 | 644.94 | 15.58 | 0.674 |
+    | CatBoost | 418.20 | 674.08 | 15.14 | 0.683 |
+    | Random forest (Phase 1) | 423.79 | 655.07 | 16.00 | 0.692 |
+    | XGBoost (Phase 1) | 434.60 | 669.63 | 16.31 | 0.710 |
+    | LightGBM | 434.78 | 662.76 | 16.21 | 0.710 |
+    | DAM price | 499.08 | 725.33 | 18.58 | 0.815 |
+    | Same block yesterday | 522.09 | 818.42 | 19.20 | 0.853 |
+    | MSTL with exponential smoothing | 581.74 | 837.53 | 19.67 | 0.950 |
+    | Same block last week | 612.13 | 956.71 | 21.58 | 1.000 |
+
+    The best model, LEAR, is 2.68 percent below the Phase 1 random forest. The ranking of the top models changed between
+    the validation and test days: LightGBM went from second to fifth and LEAR from fifth to first.
+  * **Significance (Table O2).** One-sided Diebold-Mariano tests on the daily mean absolute error. The best simple
+    forecast on the test days is the DAM price. The table gives each model's mean daily difference from it.
+
+    | Model | Mean daily MAE difference | 95% interval | DM p-value | Days better (of 21) |
+    |---|---|---|---|---|
+    | LEAR | -86.78 | -135.72 to -35.88 | 0.002 | 15 |
+    | CatBoost | -81.00 | -136.58 to -20.71 | 0.008 | 14 |
+    | Random forest (Phase 1) | -75.35 | -120.43 to -24.55 | 0.004 | 16 |
+    | XGBoost (Phase 1) | -64.56 | -109.44 to -15.62 | 0.010 | 16 |
+    | LightGBM | -64.39 | -112.88 to -11.00 | 0.014 | 16 |
+
+    No learning model is clearly better than another. Among the five, the smallest p-values are CatBoost against LightGBM
+    (0.03), LEAR against LightGBM (0.06) and LEAR against XGBoost (0.06), and with 36 pairs compared a single p of 0.03
+    is weak evidence. The success criterion that I set before tuning is not met on this window: the best model, LEAR,
+    beats the Phase 1 random forest with p = 0.24 and the Phase 1 XGBoost with p = 0.06.
+
+    ![Figure 14: p-values that the row model beats the column model on the 21 test days](figures/05_dm_matrix.png)
+
+    *Figure 14. One-sided p-value that the row model has a lower daily error than the column model, on the 21 test
+    days. Green is small, red is large.*
+  * **Errors by day and by time of day.** All models move together from day to day, and two days stand out, 31 December
+    and 18 January. On 18 January the DAM price (575) beats the three learning models in the figure (767 to 858), and
+    yesterday's price is far worse (1046). Every model is worst between 06:00 and 12:00 (LEAR 594, CatBoost 618,
+    LightGBM 614), where the DAM price is much worse (806). In the afternoon the DAM price (427) is about as good as
+    LEAR (401).
+
+    ![Figure 15: Daily mean absolute error of five forecasts over the 21 test days](figures/05_daily_error.png)
+
+    *Figure 15. Mean absolute error by test day for LEAR, CatBoost, the Phase 1 random forest, the DAM price and
+    yesterday's price.*
+  * **The Phase 1 test day under this protocol.** On 19 January 2021, the day my first notebook used alone, no model
+    beats yesterday's price on MAE (431.57). LEAR is the closest (480.16) and has a slightly lower MAPE (10.64 against
+    10.98). The other models have MAEs from 640.53 to 708.76.
+  * **2025-26 window.** **[to be filled if the exchange allows publication]**
+    * Table R1: day-ahead scores on the test days, one row per model (MAE, RMSE, rMAE, cap F1).
+    * Table R2: the same on the validation days, marked as optimistic for tuned models.
+    * Table R3: the five rolling folds.
+    * Table R4: intraday scores for the leads 1, 2, 4 and 8.
+* **What I understand.**
+  * **From the 2020-21 data.** The learning models are about 17 percent better than the DAM price (LEAR 412.43 against
+    499.08), and the tests support that gain (p from 0.002 to 0.014 against the best simple forecast). They cannot be
+    separated from each other on 21 days, and the Phase 1 random forest, refitted daily on corrected inputs, is within 3
+    percent of the best. So the progress over my first notebook comes mostly from evaluating properly, fixing the dates
+    and filling gaps better, not from a more complicated model. That a plain lasso model does as well as the boosted
+    trees suggests that, once the day-ahead price and volumes are known, the relationship is simple. The mismatch between
+    validation and test rankings is a warning against reading a ranking from a short period. It is also why the same
+    comparison runs on a year of newer data, with neural and pretrained models added.
+  * **From the 2025-26 window.** **[to be filled if the exchange allows publication]**
 
 ### 2.6 Significance, uncertainty and errors
 
@@ -347,9 +427,9 @@ Besides these, 27 of the 39 printed values of the original notebook are identica
   compared to the committed one, and the notebooks.
 * A scan of every commit and the tree for private paths, non-ASCII text, trailers and secrets.
 * Every reference in Appendix D checked at the DOI registry or on its arXiv record, with the exceptions stated there.
-* I looked at each of the 16 figures in `docs/figures` once, against the numbers in the text. Twelve are in the report.
-  The other four (the price distributions of step 2.1, and the daily error, the test matrix and the tuning progress
-  of the 2020-21 model comparison) are not placed, because they belong to the text of step 2.5.
+* I looked at each of the 16 figures in `docs/figures` once, against the numbers in the text. Fifteen are in the report.
+  The sixteenth, the price distributions of step 2.1, is not placed, because its RTM panel repeats the left panel of
+  Figure 11.
 
 ## Appendix C. Data quality
 
