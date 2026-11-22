@@ -298,7 +298,8 @@ Besides these, 27 of the 39 printed values of the original notebook are identica
 * A fresh clone: install from the lock file, lint, type check, the full test suite, the data pipeline with its report
   compared to the committed one, and the notebooks.
 * A scan of every commit and the tree for private paths, non-ASCII text, trailers and secrets.
-* **[to be filled]** Every figure looked at once, and every citation checked at its source.
+* Every reference in Appendix D checked at the DOI registry or on its arXiv record, with the exceptions stated there.
+* **[to be filled]** Every figure looked at once.
 
 ## Appendix C. Data quality
 
@@ -306,6 +307,107 @@ See the [data card](data_card.md) and `reports/`.
 
 ## Appendix D. References
 
-**[to be filled]** Only references that I have checked at the source. Until then, the methods named in the text are
-Diebold and Mariano for the forecast comparison test, Harvey, Leybourne and Newbold for its small-sample correction,
-and Hansen, Lunde and Nason for the model confidence set.
+I checked the bibliographic data of each reference at the DOI registry (Crossref and OpenAlex) or on its arXiv record on
+22 November 2026, unless a note says otherwise. For the related work I read only the abstract, except where the note
+says that I read the paper in full.
+
+**Tests and scores**
+
+* Diebold, F. X. and Mariano, R. S. (1995). Comparing predictive accuracy. *Journal of Business & Economic Statistics*
+  13(3), 253-263. doi:10.1080/07350015.1995.10524599
+* Harvey, D., Leybourne, S. and Newbold, P. (1997). Testing the equality of prediction mean squared errors.
+  *International Journal of Forecasting* 13(2), 281-291. doi:10.1016/S0169-2070(96)00719-4
+* Hansen, P. R., Lunde, A. and Nason, J. M. (2011). The model confidence set. *Econometrica* 79(2), 453-497.
+  doi:10.3982/ECTA5771
+* Gneiting, T. and Raftery, A. E. (2007). Strictly proper scoring rules, prediction, and estimation. *Journal of the
+  American Statistical Association* 102(477), 359-378. doi:10.1198/016214506000001437 (I checked the reference, not which
+  scores the paper defines.)
+
+**Models and settings**
+
+* Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. *Journal of the Royal Statistical Society,
+  Series B* 58(1), 267-288. doi:10.1111/j.2517-6161.1996.tb02080.x
+* Uniejewski, B., Nowotarski, J. and Weron, R. (2016). Automated variable selection and shrinkage for day-ahead
+  electricity price forecasting. *Energies* 9(8), 621. doi:10.3390/en9080621
+* Lago, J., Marcjasz, G., De Schutter, B. and Weron, R. (2021). Forecasting day-ahead electricity prices: a review of
+  state-of-the-art algorithms, best practices and an open-access benchmark. *Applied Energy* 293, 116983.
+  doi:10.1016/j.apenergy.2021.116983
+* Uniejewski, B., Weron, R. and Ziel, F. (2018). Variance stabilizing transformations for electricity spot price
+  forecasting. *IEEE Transactions on Power Systems* 33(2), 2219-2229. doi:10.1109/TPWRS.2017.2734563
+* Bandara, K., Hyndman, R. J. and Bergmeir, C. (2021). MSTL: a seasonal-trend decomposition algorithm for time series
+  with multiple seasonal patterns. arXiv:2107.13462.
+* Cleveland, R. B., Cleveland, W. S., McRae, J. E. and Terpenning, I. (1990). STL: a seasonal-trend decomposition
+  procedure based on loess. *Journal of Official Statistics* 6, 3-73 (I confirmed the volume and pages from the
+  documentation of statistical software, not from the journal).
+* Gardner, E. S. and McKenzie, E. (1985). Forecasting trends in time series. *Management Science* 31(10), 1237-1246.
+  doi:10.1287/mnsc.31.10.1237
+* Breiman, L. (2001). Random forests. *Machine Learning* 45(1), 5-32. doi:10.1023/A:1010933404324
+* Chen, T. and Guestrin, C. (2016). XGBoost: a scalable tree boosting system. *Proceedings of the 22nd ACM SIGKDD
+  International Conference on Knowledge Discovery and Data Mining*, 785-794. doi:10.1145/2939672.2939785
+* Ke, G., Meng, Q., Finley, T., Wang, T. and others (2017). LightGBM: a highly efficient gradient boosting decision
+  tree. *Advances in Neural Information Processing Systems* 30 (title and first four authors checked on the
+  proceedings page on 16 November 2026).
+* Prokhorenkova, L., Gusev, G., Vorobev, A., Dorogush, A. V. and Gulin, A. (2017). CatBoost: unbiased boosting with
+  categorical features. arXiv:1706.09516 (published version not checked). Dorogush, A. V., Ershov, V. and Gulin, A.
+  (2018). CatBoost: gradient boosting with categorical features support. arXiv:1810.11363.
+* Ansari, A. F., Stella, L., Turkmen, C. and others (2024). Chronos: learning the language of time series.
+  arXiv:2403.07815 (published venue not checked). I use Chronos-Bolt, a later model family that is described on its
+  model card, https://huggingface.co/amazon/chronos-bolt-base, which links this paper.
+* Das, A., Kong, W., Sen, R. and Zhou, Y. (2024). A decoder-only foundation model for time-series forecasting.
+  arXiv:2310.10688; the model card names it as the ICML 2024 paper. The version I use is TimesFM 2.5, which this paper
+  does not describe.
+* Challu, C., Olivares, K. G., Oreshkin, B. N., Garza, F., Mergenthaler-Canseco, M. and Dubrawski, A. (2022). N-HiTS:
+  neural hierarchical interpolation for time series forecasting. arXiv:2201.12886 (the record says it was accepted at
+  AAAI-23; I did not check the proceedings).
+* Lim, B., Arik, S. O., Loeff, N. and Pfister, T. (2021). Temporal fusion transformers for interpretable multi-horizon
+  time series forecasting. *International Journal of Forecasting* 37(4), 1748-1764. doi:10.1016/j.ijforecast.2021.03.012
+* Akiba, T., Sano, S., Yanase, T., Ohta, T. and Koyama, M. (2019). Optuna: a next-generation hyperparameter
+  optimization framework. *Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery and Data
+  Mining*, 2623-2631. doi:10.1145/3292500.3330701
+* Bergstra, J., Bardenet, R., Bengio, Y. and Kegl, B. (2011). Algorithms for hyper-parameter optimization. *Advances in
+  Neural Information Processing Systems* 24 (title and authors checked on the proceedings page on 16 November 2026).
+
+**The cap-aware model**
+
+* Cragg, J. G. (1971). Some statistical models for limited dependent variables with application to the demand for
+  durable goods. *Econometrica* 39(5), 829-844. doi:10.2307/1909582 (volume, issue and first page at the DOI registry;
+  the last page from the publisher's listing, seen through a search result).
+* Koenker, R. and Bassett, G. (1978). Regression quantiles. *Econometrica* 46(1), 33-50. doi:10.2307/1913643 (same
+  note on the last page).
+* Romano, Y., Patterson, E. and Candes, E. J. (2019). Conformalized quantile regression. *Advances in Neural Information
+  Processing Systems* 32, 3538-3548. arXiv:1905.03222 (the proceedings page itself was not opened).
+
+**Related work on electricity prices**
+
+* Shukla, V., Nathani, G., Yadav, P., Kalam, A. and Akin, S. (2026). Machine learning-driven market selection for
+  cost-optimal electricity procurement in dual-settlement markets. *Array* 32, 101302. doi:10.1016/j.array.2026.101302
+  (read in full; it forecasts a spread between the RTM and DAM prices on IEX data).
+* Hornek, T., Sartipi, A., Tchappi, I. and Fridgen, G. (2025). Benchmarking pre-trained time series models for
+  electricity price forecasting. *International Conference on the European Energy Market (EEM)*, 1-7.
+  doi:10.1109/eem64765.2025.11050326
+* Lipiecki, A. and Weron, R. (2026). Foundation models for electricity price forecasting and battery arbitrage: can they
+  replace market-specific forecasting models? arXiv:2609.00089 (preprint).
+* Marcjasz, G., Narajewski, M., Weron, R. and Ziel, F. (2023). Distributional neural networks for electricity price
+  forecasting. *Energy Economics* 125, 106843. doi:10.1016/j.eneco.2023.106843
+* Nowotarski, J. and Weron, R. (2018). Recent advances in electricity price forecasting: a review of probabilistic
+  forecasting. *Renewable and Sustainable Energy Reviews* 81, 1548-1568. doi:10.1016/j.rser.2017.05.234
+* Cornell, C., Dinh, N. T. and Pourmousavi, S. A. (2024). A probabilistic forecast methodology for volatile electricity
+  prices in the Australian National Electricity Market. *International Journal of Forecasting* 40(4), 1421-1437.
+  doi:10.1016/j.ijforecast.2023.12.003
+* Narajewski, M. and Ziel, F. (2020). Econometric modelling and forecasting of intraday electricity prices. *Journal of
+  Commodity Markets* 19, 100107. doi:10.1016/j.jcomm.2019.100107
+
+**Software**
+
+* Pedregosa, F. and others (2011). Scikit-learn: machine learning in Python. *Journal of Machine Learning Research* 12,
+  2825-2830 (checked on the journal page on 16 November 2026).
+* McKinney, W. (2010). Data structures for statistical computing in Python. *Proceedings of the 9th Python in Science
+  Conference*, 56-61. doi:10.25080/Majora-92bf1922-00a
+* Seabold, S. and Perktold, J. (2010). Statsmodels: econometric and statistical modeling with Python. *Proceedings of the
+  9th Python in Science Conference*, 92-96. doi:10.25080/Majora-92bf1922-011
+* Bantilan, N. (2020). pandera: statistical data validation of pandas dataframes. *Proceedings of the 19th Python in
+  Science Conference*, 116-124. doi:10.25080/Majora-342d178e-010
+* Hunter, J. D. (2007). Matplotlib: a 2D graphics environment. *Computing in Science & Engineering* 9(3), 90-95.
+  doi:10.1109/MCSE.2007.55
+
+**Data sources.** Described in the [data card](data_card.md), with the holiday lists in `config/holidays.yaml`.
