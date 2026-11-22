@@ -65,12 +65,20 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     columns together and always two blocks in a row: six gaps, each starting on an odd block. That is what a missing
     half-hour looks like, so I suspect that the RTM clears every 30 minutes, but I have not checked this against the
     exchange rules. No RTM price repeats for more than two blocks in a row, so I see no sign of a stuck price feed.
+
+    ![Figure 1: The raw series of the 2020-21 data: RTM price, DAM price, demand and RTM purchase bid](figures/01_raw_series.png)
+
+    *Figure 1. Raw series of the 2020-21 data in 15-minute blocks: RTM price, DAM price, demand and RTM purchase bid. Red dots mark the six gaps in the RTM price.*
   * The two bid columns hold values from about 199 to 26787. That is too large and too regular for prices, so I read
     them as volumes in MW. My first draft of the data contract treated them as prices and failed on the real file,
     which is how I noticed.
   * Demand is the weak column. It has 16 runs of four or more identical values (359 rows, the longest 87 blocks, about
     22 hours), and three pairs of days share exactly the same 96 values. From 1 to 15 October the daily maximum stays
     between 171594 and 171833 MW, which measured demand does not usually do. I cannot tell the cause from the file.
+
+    ![Figure 2: Daily maximum and minimum demand, and demand with long runs of identical values shaded](figures/01_demand_artefacts.png)
+
+    *Figure 2. Top: daily maximum and minimum demand. Bottom: demand, with runs of 20 or more identical values shaded. I treat runs of four or more as unreliable, so the shading shows only the longest.*
   * **2025-26 window, 365 days, 35040 blocks.** RTM has 14 blocks missing, in two runs of consecutive blocks. DAM has
     none missing. Demand has 104 blocks missing and 6 flagged as suspect. The demand sheet changed layout twice during
     the year, so there are three layouts, with storage columns in the later two, and the demand figure counts storage
@@ -97,20 +105,44 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     lowest average RTM price is in block 16 (2083 INR/MWh) and the highest in block 74 (4144). Only Sunday is a low
     day: its mean RTM price is 2550, while Saturday (2891) is close to the weekdays (2784 to 2963). My first notebook
     flagged Saturday and Sunday together, which hides this.
+
+    ![Figure 3: Average daily profile of RTM price, DAM price and demand, weekdays and weekends](figures/02_daily_profile.png)
+
+    *Figure 3. Average RTM price, DAM price and demand by block of the day, weekdays against weekends. Saturday and Sunday are drawn together here, which hides that only Sunday is low.*
   * **Levels move.** The mean RTM price rises from 2691 in October to 2981 in January, and its standard deviation
     from 664 to 1030. The mean daily standard deviation is 528 in the first half of the window and 786 in the second.
     The last day, 19 January 2021, which my first notebook used as its single test day, has the highest mean price of
     the 111 days (3990) and the third highest daily standard deviation (1476).
+
+    ![Figure 4: Daily mean, maximum and standard deviation of the RTM price](figures/02_volatility.png)
+
+    *Figure 4. Daily mean and maximum of the RTM price (top) and its daily standard deviation (bottom).*
   * **RTM against DAM.** RTM is above DAM in 59.0 percent of blocks. The mean gap is 48 INR/MWh, the median 83 and
     the standard deviation 594, so the gap is small on average and large in single blocks. The two prices have a
     correlation of 0.721. In January the RTM price is on average below the DAM price (gap -103), in the other months
     above it.
+
+    ![Figure 5: Distribution of the RTM minus DAM price and scatter of RTM against DAM price](figures/02_rtm_vs_dam.png)
+
+    *Figure 5. Left: RTM minus DAM price in the same block. Right: RTM against DAM price, with the line RTM = DAM. The horizontal rows of points are round RTM values such as 6000.*
   * **Memory.** The autocorrelation is 0.936 at 15 minutes, 0.777 at one hour and 0.561 at two hours, then rises again
     to 0.660 at one day and is 0.409 at one week. In the partial autocorrelation only lag 1 is large. A decomposition
     into trend, daily pattern and remainder gives a daily seasonal strength of 0.689 and a trend strength of 0.454.
+
+    ![Figure 6: Autocorrelation and partial autocorrelation of the RTM price](figures/02_acf_pacf.png)
+
+    *Figure 6. Autocorrelation of the RTM price up to one week (top) and partial autocorrelation over the first day (bottom), in blocks.*
+
+    ![Figure 7: STL decomposition of the RTM price](figures/02_stl.png)
+
+    *Figure 7. Decomposition of the RTM price into trend, daily seasonal part and remainder (period 96 blocks).*
   * **Demand.** After I leave out the first 15 days and the repeated-value runs, 8857 of the 10656 rows remain. Demand
     has a correlation of 0.688 with the RTM price and 0.784 with the DAM price. By hour of day the correlation with
     the RTM price is strongest at hour 9 (0.69) and weakest at hour 22 (0.24).
+
+    ![Figure 8: RTM price against demand and their correlation by hour of day](figures/02_demand_price.png)
+
+    *Figure 8. Left: RTM price against demand. Right: correlation of the two by hour of day.*
   * **Spikes.** 268 blocks lie above 5292 INR/MWh (the mean plus three standard deviations), on 42 days. Most fall in
     hours 8 to 10 (92 blocks) and hours 17 to 19 (142 blocks). December has 106 of them and January 96, although
     January has only 19 days in the data.
@@ -141,6 +173,10 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     random forest, which had no seed.
   * Reading the dates day first changes the XGBoost MAPE by about two points (16.17 to 14.10). That is more than the
     gap between my two models in 2021 (15.32 against 16.17).
+
+    ![Figure 9: Test-day MAPE of the two Phase 1 models under three input variants, against simple forecasts](figures/03_phase1_recheck.png)
+
+    *Figure 9. MAPE on the test day of Phase 1 for XGBoost (diamond) and the random forest (one dot per seed), under three versions of the dates and holidays, against two forecasts that use no model.*
 * **What I understand.** On this one day none of my models beat yesterday's price, so the 2021 claim of about 85
   percent accuracy says little: a forecast that copies the day before does better on the same measure. The defects
   change the scores by more than the gap I reported between the models. With the dates read correctly XGBoost scores a
@@ -161,12 +197,20 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     of 163.28 against 215.85 for the previous block, and for gaps of eight blocks 230.57 against 360.53. Yesterday's
     value in the same block is clearly worse (426.71 and 423.68). Each method sees only values up to the end of the day
     that holds the gap, because a forecast for tomorrow may use today's filled values but must not look into tomorrow.
+
+    ![Figure 10: Error of four gap-filling methods](figures/04_imputation.png)
+
+    *Figure 10. Mean absolute error of four ways to fill hidden RTM prices, for gaps of two and eight blocks (ffill is the previous block, blend is a mix of methods).*
   * **The transform.** The prices have a long right tail (skew 1.621 over all days). The arcsinh transform is close to
     a logarithm for these prices. I compared scales on the first 90 days only, so that the choice does not look at
     later days. A scale of 1000 brings the skew on those days from 1.532 to 0.041, the plain logarithm gives -0.386,
     and every scale up to 1000 removes most of the skew. I keep arcsinh because it also works for zero and negative
     prices. The transform can be undone exactly (largest round-trip error 1.8e-12). Whether it helps a model is a
     question for step 2.5.
+
+    ![Figure 11: RTM price distribution before and after the arcsinh transform](figures/04_transform.png)
+
+    *Figure 11. RTM price (left) and its arcsinh transform with scale 1000 (right).*
   * **Holidays.** The first notebook's list left out 30 November (Guru Nanak's Birthday), included 31 December, which
     is not on the central government list, and labelled 30 October "Good Friday", although that day is Milad-un-Nabi
     and Good Friday was on 10 April. The new lists come from the Department of Personnel and Training. I read the
@@ -184,6 +228,10 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   * **First look at the inputs.** By rank correlation with the price, the DAM price of the same block (0.772) and
     yesterday's RTM price (0.764) are the strongest, followed by demand a day earlier (0.730) and the DAM purchase
     volume (0.726). The DAM selling volume has the strongest negative one, about -0.7. This is not a model.
+
+    ![Figure 12: Rank correlation of the inputs with the RTM price](figures/04_input_correlation.png)
+
+    *Figure 12. Rank correlation of each input with the RTM price.*
   * **No look-ahead.** The tests scramble everything a forecaster could not yet know (RTM and demand from the forecast
     day on, DAM after it) and check that the inputs of the forecast day do not change, for three days. They also check
     that a gap fill never looks into the next day, and I confirmed that these tests fail when the fill does look ahead.
@@ -299,7 +347,9 @@ Besides these, 27 of the 39 printed values of the original notebook are identica
   compared to the committed one, and the notebooks.
 * A scan of every commit and the tree for private paths, non-ASCII text, trailers and secrets.
 * Every reference in Appendix D checked at the DOI registry or on its arXiv record, with the exceptions stated there.
-* **[to be filled]** Every figure looked at once.
+* I looked at each of the 16 figures in `docs/figures` once, against the numbers in the text. Twelve are in the report.
+  The other four (the price distributions of step 2.1, and the daily error, the test matrix and the tuning progress
+  of the 2020-21 model comparison) are not placed, because they belong to the text of step 2.5.
 
 ## Appendix C. Data quality
 
