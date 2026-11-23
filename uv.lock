@@ -4551,6 +4551,7 @@ name = "rtm-forecast"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "lightgbm" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "openpyxl" },
@@ -4560,8 +4561,6 @@ dependencies = [
     { name = "python-calamine" },
     { name = "pyyaml" },
     { name = "scikit-learn" },
-    { name = "xgboost", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "xgboost", version = "3.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
 
 [package.dev-dependencies]
@@ -4587,12 +4586,14 @@ eda = [
 ]
 models = [
     { name = "catboost" },
-    { name = "lightgbm" },
     { name = "optuna" },
+    { name = "xgboost", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "xgboost", version = "3.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "lightgbm", specifier = ">=4.7.0" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=2.2" },
@@ -4601,7 +4602,6 @@ requires-dist = [
     { name = "python-calamine", specifier = ">=0.9.1" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "scikit-learn", specifier = ">=1.5" },
-    { name = "xgboost", specifier = ">=2.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -4625,8 +4625,8 @@ eda = [
 ]
 models = [
     { name = "catboost", specifier = ">=1.2.10" },
-    { name = "lightgbm", specifier = ">=4.7.0" },
     { name = "optuna", specifier = ">=5.1.0" },
+    { name = "xgboost", specifier = ">=2.1" },
 ]
 
 [[package]]

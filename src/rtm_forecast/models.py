@@ -11,14 +11,10 @@ from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
-from catboost import CatBoostRegressor
 from lightgbm import Booster, LGBMClassifier, LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Lasso, LassoLars
 from sklearn.preprocessing import StandardScaler
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from statsmodels.tsa.seasonal import MSTL
-from xgboost import XGBRegressor
 
 from rtm_forecast.backtest import Predictor
 from rtm_forecast.ingest import BLOCKS_PER_DAY
@@ -68,6 +64,8 @@ def catboost_predictor(
     columns: Sequence[str], transform: AsinhTransform | None, params: dict[str, Any], seed: int
 ) -> Predictor:
     def predict(train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
+        from catboost import CatBoostRegressor  # loaded here: the daily forecast does not need it
+
         model = CatBoostRegressor(
             random_seed=seed,
             thread_count=THREADS,
@@ -301,6 +299,8 @@ def lear_predictor(
 
 def phase1_xgboost_predictor(columns: Sequence[str]) -> Predictor:
     def predict(train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
+        from xgboost import XGBRegressor  # loaded here: the daily forecast does not need it
+
         model = XGBRegressor(
             tree_method="exact", base_score=0.5, random_state=0, n_jobs=THREADS, **XGB_PARAMS
         )
@@ -328,6 +328,9 @@ def mstl_ets_predictor(history: pd.Series) -> Predictor:
     """
 
     def predict(train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
+        from statsmodels.tsa.holtwinters import ExponentialSmoothing
+        from statsmodels.tsa.seasonal import MSTL
+
         first = test["date"].min()
         zone = pd.DatetimeIndex(history.index).tz
         past = history[history.index < first.tz_localize(zone)].to_numpy()

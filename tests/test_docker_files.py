@@ -35,7 +35,13 @@ def test_the_release_workflow_publishes_the_image_and_attaches_no_results() -> N
     text = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
     workflow = yaml.safe_load(text)
     assert workflow[True]["push"]["tags"] == ["v*"]  # PyYAML reads the key `on` as True
+    assert "workflow_dispatch" in workflow[True]
     assert "gh release create" in text and "docker push" in text
+    # a manual run on a branch must build and check the image only: both publishing steps are
+    # guarded to tags
+    steps = workflow["jobs"]["release"]["steps"]
+    guarded = [s["name"] for s in steps if s.get("if") == "github.ref_type == 'tag'"]
+    assert guarded == ["Push the image", "Create the Release"]
     command = text.split("gh release create")[1]
     for private in (*PRIVATE, "results", "reports", "--attach", "gh release upload"):
         assert private not in command
