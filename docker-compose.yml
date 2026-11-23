@@ -1,0 +1,26 @@
+# The prices stay on this computer: the data folder is mounted, never copied into the image.
+#
+#   docker compose run --rm cli fit
+#   docker compose run --rm cli forecast --day 2026-11-01
+#   docker compose up app          # then open http://localhost:8501
+services:
+  cli:
+    build: .
+    image: rtm-forecast
+    volumes:
+      - ./data:/work/data
+
+  app:
+    build: .
+    image: rtm-forecast
+    entrypoint:
+      - streamlit
+      - run
+      - app/streamlit_app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+    volumes:
+      - ./data:/work/data:ro
+    # published on this computer only, as the app shows forecasts made from published prices
+    ports:
+      - "127.0.0.1:8501:8501"

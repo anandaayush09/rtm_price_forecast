@@ -113,3 +113,57 @@ def test_lars_solver_gives_the_same_lasso_forecasts(
     )
     fast = rolling_origin(table, days, m.lear_predictor(columns, transform, 0.01, 0, "lars"), "a")
     np.testing.assert_allclose(fast["prediction"], slow["prediction"], rtol=2e-3)
+
+
+CAP = 10000.0
+
+
+def _capped_prices(rows: int, seed: int, cap_when_positive: bool = True) -> pd.DataFrame:
+    """Price is at the cap when x > 0 and about 3000 + 500 x otherwise: the cap is predictable."""
+    rng = np.random.default_rng(seed)
+    x = rng.normal(size=rows)
+    below = 3000 + 500 * x + rng.normal(scale=100, size=rows)
+    price = np.where(x > 0, CAP, below) if cap_when_positive else below
+    dates = pd.Timestamp("2026-01-01") + pd.to_timedelta(np.arange(rows) // 96, unit="D")
+    return pd.DataFrame({"date": dates, "x": x, "rtm_price": price})
+
+
+CAP_PARAMS = {"n_estimators": 60, "learning_rate": 0.1, "num_leaves": 8, "min_child_samples": 5}
+
+
+def test_cap_aware_forecasts_call_the_cap_and_stay_below_it_otherwise() -> None:
+    train, test = _capped_prices(4000, 0), _capped_prices(960, 1)
+    predictors = m.cap_aware_predictors(["x"], None, CAP_PARAMS, 0, CAP)
+    hard = predictors["cap_hard"](train, test)
+    mixture = predictors["cap_mixture"](train, test)
+    clear = np.abs(test["x"].to_numpy()) > 0.5
+    at_cap = test["x"].to_numpy() > 0
+    assert (hard[clear & at_cap] == CAP).all()
+    assert (hard[clear & ~at_cap] < CAP).all()
+    # where the cap is called both forecasts agree; below it the mixture median is not lower
+    called = hard == CAP
+    np.testing.assert_array_equal(mixture[called], hard[called])
+    assert (mixture[~called] >= hard[~called] - 1e-9).all()
+    assert (mixture <= CAP).all()
+
+
+def test_cap_aware_forecasts_do_not_read_the_test_prices() -> None:
+    train, test = _capped_prices(3000, 2), _capped_prices(480, 3)
+    changed = test.assign(rtm_price=0.0)
+    first = m.cap_aware_predictors(["x"], None, CAP_PARAMS, 0, CAP)["cap_mixture"](train, test)
+    second = m.cap_aware_predictors(["x"], None, CAP_PARAMS, 0, CAP)["cap_mixture"](train, changed)
+    np.testing.assert_array_equal(first, second)
+
+
+def test_cap_aware_forecast_without_any_cap_in_training_is_a_plain_median_forecast() -> None:
+    train, test = _capped_prices(2000, 4, cap_when_positive=False), _capped_prices(480, 5)
+    predictors = m.cap_aware_predictors(["x"], None, CAP_PARAMS, 0, CAP)
+    assert (predictors["cap_hard"](train, test) < CAP).all()
+    with pytest.raises(ValueError, match="every training block"):
+        predictors["cap_hard"](train.assign(rtm_price=CAP), test)
+
+
+def test_cap_aware_levels_are_checked() -> None:
+    for levels in [(0.6, 0.9), (0.5, 0.5), (0.5, 1.0)]:
+        with pytest.raises(ValueError, match="levels"):
+            m.cap_aware_predictors(["x"], None, CAP_PARAMS, 0, CAP, levels)

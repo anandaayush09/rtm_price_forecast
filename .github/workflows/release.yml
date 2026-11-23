@@ -1,0 +1,31 @@
+# Runs when a version tag such as v1.0.0 is pushed: publishes the image and creates the Release.
+# The image holds code only (the Dockerfile copies no data). No result files are attached to the
+# Release: forecasts and score tables come from published exchange prices, so they stay out until
+# the exchange's terms of use have been checked.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and push the image
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/rtm_price_forecast"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -t "$image:${GITHUB_REF_NAME}" -t "$image:latest" .
+          docker run --rm "$image:${GITHUB_REF_NAME}" --help
+          docker push "$image:${GITHUB_REF_NAME}"
+          docker push "$image:latest"
+      - name: Create the Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes

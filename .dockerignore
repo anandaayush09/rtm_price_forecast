@@ -1,0 +1,22 @@
+# Nothing private or large goes into the build context.
+.git
+.venv
+.project-local
+*.local.md
+data
+optuna
+literature
+results
+reports
+original
+repro2020
+notebooks
+kaggle
+docs
+tests
+scripts
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.coverage
+**/__pycache__

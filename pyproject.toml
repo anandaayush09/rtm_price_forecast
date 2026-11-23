@@ -17,6 +17,9 @@ dependencies = [
 ]
 
 [dependency-groups]
+app = [
+    "streamlit>=1.67",
+]
 dev = [
     "dvc>=3.67.1",
     "mypy>=1.11",
@@ -44,7 +47,7 @@ models = [
 rtm-forecast = "rtm_forecast.cli:main"
 
 [tool.uv]
-default-groups = ["dev", "eda", "models"]
+default-groups = ["dev", "eda", "models", "app"]
 
 [build-system]
 requires = ["hatchling"]

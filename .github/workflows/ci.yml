@@ -21,6 +21,10 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
+      - name: Build the image and check the command line starts in it
+        run: |
+          docker build -t rtm-forecast .
+          docker run --rm rtm-forecast --help
       - name: Rebuild the data pipeline and compare the quality report
         run: |
           uv run dvc repro
