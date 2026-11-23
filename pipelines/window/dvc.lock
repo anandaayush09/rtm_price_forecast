@@ -1,0 +1,74 @@
+schema: '2.0'
+stages:
+  clean_window:
+    cmd: python -m rtm_forecast.cli clean-window
+    deps:
+    - path: data/external/demand/psp
+      hash: md5
+      md5: 054e089a1ac929a501e52c528d4d6235.dir
+      size: 107193434
+      nfiles: 365
+    - path: data/external/iex_dam
+      hash: md5
+      md5: 6ad577ffadaabe396a744da0bc94f0fc.dir
+      size: 3172437
+      nfiles: 14
+    - path: data/external/iex_rtm
+      hash: md5
+      md5: c5789cc671516f1f517cc2cc6c748832.dir
+      size: 3260981
+      nfiles: 15
+    - path: src/rtm_forecast/cli.py
+      hash: md5
+      md5: 93dbcb15f9ed1727ab35fa1664ea3e29
+      size: 4928
+    - path: src/rtm_forecast/config.py
+      hash: md5
+      md5: f654bf41c037020586e6d1610949c096
+      size: 3879
+    - path: src/rtm_forecast/contracts.py
+      hash: md5
+      md5: 71d9e834209bd7be95e9cde172f22070
+      size: 9220
+    - path: src/rtm_forecast/iex_export.py
+      hash: md5
+      md5: e03c284c400006f7242491e041087146
+      size: 6216
+    - path: src/rtm_forecast/psp.py
+      hash: md5
+      md5: 357ff39431d876983d979dcfefbf28fd
+      size: 6749
+    - path: src/rtm_forecast/window.py
+      hash: md5
+      md5: b2afe97e41e7113796a733ac9ae7e965
+      size: 5071
+    params:
+      params.yaml:
+        data:
+          raw_path: data/raw/price_data.csv
+          clean_path: data/interim/clean.parquet
+          report_path: reports/data_quality.json
+          price_min: 0.0
+          price_max: 20000.0
+          bid_min: 0.0
+          bid_max: 200000.0
+          demand_min: 50000.0
+          demand_max: 300000.0
+          stale_min_blocks: 4
+        window:
+          start: '2025-11-01'
+          end: '2026-10-31'
+          rtm_dir: data/external/iex_rtm
+          dam_dir: data/external/iex_dam
+          psp_dir: data/external/demand/psp
+          clean_path: data/interim/clean_window.parquet
+          report_path: reports/window_quality.json
+    outs:
+    - path: data/interim/clean_window.parquet
+      hash: md5
+      md5: 4b0027f66255d74747db6526d4b86693
+      size: 4152474
+    - path: reports/window_quality.json
+      hash: md5
+      md5: 1b3ea12e2ab2f0ee11e9e9de9d322cbe
+      size: 2189
