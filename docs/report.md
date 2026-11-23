@@ -671,8 +671,10 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     of the prices. Only 7.3 percent of these blocks settle at the cap, against 46.6 percent on the test days; the model
     calls 8.1 percent of them, and the F1 of calling the cap is 0.765 against 0.923 on the test days. The error on cap
     blocks is 823.0 against 1299.4 for yesterday's price, and on the other blocks 637.1 against 870.4.
-  * **What I have not done.** The continuous integration step that builds the image has run on GitHub and passed. The
-    workflow that publishes the image on a version tag has not run; it can be started by hand without publishing.
+  * **Release workflow.** The continuous integration step that builds the image has run on GitHub and passed. The
+    workflow that publishes the image on a version tag was started by hand once: it built the image and checked that
+    the command line starts in it, and the two steps that push the image and create a release were skipped, as
+    intended. It has not run on a version tag, so publishing itself is untested.
 * **What I understand.** The model I evaluated is the model the command line runs, and the saved files reproduce its
   backtest forecasts on the days I checked, which is what I needed before trusting the daily loop. It is still a check
   of the past. The 22 days after the window show that the loop runs on days it has not seen, including the margins that
