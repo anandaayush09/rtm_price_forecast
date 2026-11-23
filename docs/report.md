@@ -356,8 +356,8 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   stages. Prediction intervals come from the same mixture and are corrected with a margin learned on the 60 days before,
   separately for four levels of how much the model expects the cap.
 * **What I found.**
-  * **Checks after the comparison** (`scripts/final_model_checks.py`; their figures are not published, because they come
-    from exchange prices).
+  * **Checks after the comparison** (`scripts/final_model_checks.py`, `scripts/cap_aware_variants.py` and
+    `scripts/benchmark_intraday.py`; their figures are not published, because they come from exchange prices).
     * **Why two stages.** I gave the plain tuned LightGBM four inputs about the cap in the past: whether the same block a
       day and a week earlier settled at the cap, and the share of cap blocks on the previous day and on the previous
       seven days. They did not close the gap on the test days, and the two-stage model stayed clearly better.
@@ -366,6 +366,14 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     * **Many comparisons.** With Holm's correction over the comparisons of the final model with each other forecast, the
       final model is still significantly better than all of them except its own variant. Against the same block
       yesterday it is better in every rolling fold, and significantly so after the correction in three of the five.
+    * **Recency weighting and recalibration.** I weighted recent days more (half-lives of 30, 60 and 120 days) and
+      recalibrated the cap probability with an isotonic regression on the 60 days before each day, and chose among the
+      variants on the validation days only. The variant that won there, a half-life of 60 days with recalibration, was
+      worse than the final model on the test days. Recalibration alone changed the error very little. The final model
+      keeps equal weights and the probability as it is.
+    * **Intraday.** The same two-stage model on the intraday task has the lowest error of all models at each of the
+      four leads on the test days, and it is significantly better than the last known price at each of them. The
+      same caveat as for the day-ahead model applies.
   * Table R7: the final model against the baselines on the test days. **[to be filled if the exchange allows publication]**
   * Table R8: interval coverage, width and interval score, by cap state. **[to be filled if the exchange allows publication]**
   * Note for the reader: I designed this model after the plain models had not met the criterion on the test days, so
@@ -391,20 +399,25 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     checksums, and nothing is pickled.
   * **How long a day takes.** On this laptop (CPU only), refitting the model on all 358 published days takes between 9 and
     19 seconds (two sets of three runs, with medians of 10.4 and 12.5 s) and forecasting one day takes about a third
-    of a second. The saved model is 5.2 MB. The command line takes about ten seconds to start (9.4 and 10.9 s in two
-    runs), because it imports libraries that the production path does not need. These are timings of the library calls, not of the commands end to end.
+    of a second. The saved model is 5.2 MB. The command line takes 6 to 11 seconds to start (three runs), mostly
+    importing LightGBM and the libraries it loads, which the daily forecast needs. These are timings of the library calls, not of the commands end to end.
   * **Docker.** The image builds, the command line starts in it, and it holds no data. The app answers on this computer
     and not on the network address. The fit inside the container on the mounted window (358 days) gives forecasts
     that equal those fitted on Windows to four decimals on 2880 blocks, although the model files differ byte by byte.
-    The image is 4.62 GB, because the command line imports libraries that the production path does not use.
-  * **What I have not done.** I have not forecast a day after the last day in the data. The continuous integration
-    step that builds the image and the workflow that publishes it on a version tag have not run on GitHub.
+    The image was 4.62 GB because it held every benchmark library and the cache of downloaded files. Keeping those out
+    of it, and loading CatBoost, XGBoost and statsmodels only where the benchmark uses them, makes it 1.2 GB. In the
+    smaller image the command line and the app start, and the app answers on this computer's address only.
+  * **What I have not done.** I have not forecast a day after the last day in the data. A script
+    (`scripts/new_days_check.py`) runs the daily loop over such days and scores it; run over the last ten days of the
+    data, it reproduces the backtest forecasts exactly (largest difference 0.0 on 960 blocks), so it is ready for new
+    days. The continuous integration step that builds the image has run on GitHub and passed. The workflow that
+    publishes the image on a version tag has not run; it can be started by hand without publishing.
 * **What I understand.** The model I evaluated is the model the command line runs, and the saved files reproduce its
   backtest forecasts on the days I checked, which is what I needed before trusting the daily loop. It is still a check
   of the past: whether the loop holds up on a day that comes after the data, including the margins that it learns from
-  its own earlier forecasts, can only be shown by running it on new days, and I have not. The size of the image is a
-  cost of how the code is organised, not of the model. Loading the heavy libraries only where they are used should
-  make it smaller, but I have not tried it.
+  its own earlier forecasts, can only be shown by running it on new days, and I have not. The size of the image was a
+  cost of how the dependencies were organised, not of the model: keeping the benchmark libraries out of it cut it by
+  about three quarters.
 
 ## 3. Conclusion
 

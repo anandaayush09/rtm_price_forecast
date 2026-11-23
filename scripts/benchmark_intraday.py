@@ -36,6 +36,8 @@ MODELS = [
     "lear",
     "lightgbm",
     "catboost",
+    "cap_hard",
+    "cap_mixture",
 ]
 REFERENCE = "naive_last"
 
@@ -79,6 +81,14 @@ def final(inputs: Inputs, leads: list[int], only: list[str], redo: bool) -> None
             ),
             "catboost": models.catboost_predictor(
                 columns, transform, best["catboost"]["params"], seed
+            ),
+            # the two cap-aware forecasts share their fits, so the second run costs almost nothing
+            **models.cap_aware_predictors(
+                columns,
+                transform,
+                best["lightgbm"]["params"],
+                seed,
+                inputs.experiment.price_cap,
             ),
         }
         for name in only:
@@ -148,7 +158,7 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--redo", action="store_true")
     parser.add_argument("--leads", nargs="+", type=int, default=LEADS)
-    parser.add_argument("--models", nargs="+", choices=MODELS, default=MODELS)
+    parser.add_argument("--models", nargs="+", choices=MODELS, default=MODELS[:7])
     args = parser.parse_args()
     inputs = Inputs(args.smoke)
     actions: dict[str, Callable[[], None]] = {

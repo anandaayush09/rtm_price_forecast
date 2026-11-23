@@ -32,13 +32,16 @@ This page lists what the work does not show, and what I would do next.
   read as evidence, not as confirmation.
 * **Validation scores are optimistic** for every model whose settings were tuned on those days.
 * **Intraday task.** The leads 1, 2, 4 and 8 are not tied to the exchange's gate-closure and result times, which I
-  have not verified. The intraday models reuse the settings tuned for the day-ahead task, and there is no cap-aware
-  intraday model.
+  have not verified. The intraday models reuse the settings tuned for the day-ahead task. A cap-aware intraday model
+  exists and has the lowest error at all four leads on the test days, but it has the same limits as the day-ahead
+  one (it was added after the test days were seen, with no tuning of its own).
 * **Intervals.** The 50 percent intervals cover more than they should, because the mass of prices at the cap makes
   them impossible to narrow with this correction. One of the rolling folds stays under-covered even after the
   correction. I checked the cap probability afterwards. It separates cap blocks from the others well and is close to
-  calibrated overall, but it is over-confident where it gives a probability between 0.6 and 0.9, and I did not
-  recalibrate it. I did not weight recent days more heavily.
+  calibrated overall, but it is over-confident where it gives a probability between 0.6 and 0.9. I then tried
+  recalibrating it with an isotonic regression on the 60 days before each day, and weighting recent days more
+  (half-lives of 30, 60 and 120 days). The variant that was best on the validation days (a half-life of 60 days with
+  recalibration) was worse on the test days, so the final model keeps equal weights and the probability as it is.
 * **A new day.** The saved model reproduces the backtest forecasts of the days I checked, but I have not forecast a
   day that came after the last day in the data.
 
@@ -52,20 +55,19 @@ This page lists what the work does not show, and what I would do next.
 
 * A forecast of a published price is not a trading decision. I did not model transaction costs, bidding rules or
   the effect of an order on the price.
-* The app runs on one computer and reads local files. The Docker image is large, and the command line takes about ten
-  seconds to start, because it imports libraries that the production path does not need.
+* The app runs on one computer and reads local files. The command line takes six to eleven seconds to start on this
+  computer, mostly the time to import LightGBM and the libraries it loads.
 * The exchange's terms of use limit its content to personal, non-commercial use and do not allow copying or
   distributing it without permission (see the data card). This repository therefore publishes no 2025-26 price
   figures and no result tables derived from them. I have not checked the terms of the other sources.
 
 ## Future scope
 
-* Verify the gate-closure and result times, fix the real intraday lead, and add a cap-aware intraday model.
-* Recalibrate the cap probability, try weighting recent days more, and look at coverage fold by fold.
+* Verify the gate-closure and result times, and fix the real intraday lead.
+* Look at coverage fold by fold, and try a calibration that treats the regime of the last weeks separately.
 * Add TabPFN and Chronos-2 to the GPU notebook.
 * Score the frozen final model on days after 31 Oct 2026 as a true hold-out. The daily commands already support
   this: each forecast is stored and settled when the prices are published.
 * Add state holidays, and handle the change in the demand definition explicitly.
 * Watch the share of blocks at the cap over time, and run the daily commands on a schedule.
-* Slim the image by loading the heavy libraries only where they are used.
 * Publish the app and the result tables once the exchange allows it.

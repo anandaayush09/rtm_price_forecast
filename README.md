@@ -52,7 +52,7 @@ price cap is 10000 INR/MWh. The report also compares nine models on the 111 days
 Naive forecasts (yesterday, last week, the DAM price, the latest known price), LEAR (lasso autoregressive model),
 MSTL with exponential smoothing, LightGBM, CatBoost, the two Phase 1 models (random forest and XGBoost),
 Chronos-Bolt and TimesFM (pretrained, no training on this data), N-HiTS and TFT (trained per fold), and the
-two-stage cap-aware forecast with intervals. The pretrained and neural models run in a GPU notebook
+two-stage cap-aware forecast with intervals (day ahead and intraday). The pretrained and neural models run in a GPU notebook
 ([`kaggle/`](kaggle/README.md)); everything else runs on a CPU.
 
 ## How it fits together
@@ -81,7 +81,7 @@ flowchart TD
 | `app/` | the Streamlit app |
 | `config/`, `params.yaml` | holiday lists with their sources, all settings |
 | `notebooks/` | executed notebooks: audit, exploration, Phase 1 check, preprocessing, model comparison |
-| `scripts/` | the benchmark, significance, interval, model-card and final-model check scripts (2020-21 and 2025-26), and the checks of Phase 1 |
+| `scripts/` | the benchmark, significance, interval, model-card, final-model check and new-day check scripts (2020-21 and 2025-26), and the checks of Phase 1 |
 | `kaggle/` | the GPU notebook |
 | `tests/` | the tests |
 | `docs/` | the [report](docs/report.md), the [data card](docs/data_card.md) and the figures |
