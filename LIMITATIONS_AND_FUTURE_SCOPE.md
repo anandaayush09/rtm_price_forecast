@@ -22,7 +22,10 @@ This page lists what the work does not show, and what I would do next.
 ### Evaluation
 
 * **Sixty test days.** Significance tests on 60 days have little power. The model confidence set keeps several
-  models in, and the pairwise tests are not corrected for the number of comparisons.
+  models in, and the tables of pairwise tests are not corrected for the number of comparisons. I checked afterwards
+  with Holm's correction (`scripts/final_model_checks.py`): the final model stays significantly better than each other
+  forecast except its own variant. Against the same block yesterday it is better in every rolling fold, but the
+  difference is significant after the correction in three of the five folds only.
 * **The final model was designed after the test days were seen.** The plain models did not meet the success
   criterion I had set before tuning. I then built the cap-aware model. The test period is therefore not a clean
   one-shot for it. Its choice between two variants was made on the validation days only, but the results should be
@@ -33,8 +36,9 @@ This page lists what the work does not show, and what I would do next.
   intraday model.
 * **Intervals.** The 50 percent intervals cover more than they should, because the mass of prices at the cap makes
   them impossible to narrow with this correction. One of the rolling folds stays under-covered even after the
-  correction. I did not check how well the cap probability itself is calibrated, and I did not weight recent days
-  more heavily.
+  correction. I checked the cap probability afterwards. It separates cap blocks from the others well and is close to
+  calibrated overall, but it is over-confident where it gives a probability between 0.6 and 0.9, and I did not
+  recalibrate it. I did not weight recent days more heavily.
 * **A new day.** The saved model reproduces the backtest forecasts of the days I checked, but I have not forecast a
   day that came after the last day in the data.
 
@@ -48,8 +52,8 @@ This page lists what the work does not show, and what I would do next.
 
 * A forecast of a published price is not a trading decision. I did not model transaction costs, bidding rules or
   the effect of an order on the price.
-* The app runs on one computer and reads local files. The Docker image is large, because the command line imports
-  libraries that the production path does not need.
+* The app runs on one computer and reads local files. The Docker image is large, and the command line takes about ten
+  seconds to start, because it imports libraries that the production path does not need.
 * The exchange's terms of use limit its content to personal, non-commercial use and do not allow copying or
   distributing it without permission (see the data card). This repository therefore publishes no 2025-26 price
   figures and no result tables derived from them. I have not checked the terms of the other sources.
@@ -57,7 +61,7 @@ This page lists what the work does not show, and what I would do next.
 ## Future scope
 
 * Verify the gate-closure and result times, fix the real intraday lead, and add a cap-aware intraday model.
-* Check the calibration of the cap probability, try weighting recent days more, and look at coverage fold by fold.
+* Recalibrate the cap probability, try weighting recent days more, and look at coverage fold by fold.
 * Add TabPFN and Chronos-2 to the GPU notebook.
 * Score the frozen final model on days after 31 Oct 2026 as a true hold-out. The daily commands already support
   this: each forecast is stored and settled when the prices are published.

@@ -42,7 +42,8 @@ exchange files and the demand reports are not part of this repository.
   Blocks without a published price are left out.
 * **Significance.** Diebold-Mariano tests on the daily mean absolute error (one-sided, with the Harvey-Leybourne-Newbold
   small-sample correction and a bootstrap interval for the mean daily difference), and the 90 percent model confidence
-  set. I do not correct for the number of comparisons, and 60 test days give the tests little power.
+  set. The tables do not correct for the number of comparisons (section 2.7 gives a check with Holm's correction), and
+  60 test days give the tests little power.
 * **Success criterion, fixed before tuning.** A model succeeds if it beats the best simple forecast and both Phase 1
   models with a Diebold-Mariano p-value below 0.05 on the test days and is in the 90 percent model confidence set.
 * **Tuning.** The same number of Optuna trials for each tuned model family (LEAR, LightGBM and CatBoost).
@@ -348,15 +349,25 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 
 ### 2.7 The final model
 
-* **Why.** A large share of the error comes from blocks that settle at the exchange cap, and a forecast of the average
+* **Why.** Almost half of the blocks on the test days settle exactly at the exchange cap, and a forecast of the average
   cannot be right both on those blocks and on the others.
 * **What I did.** A two-stage forecast: a classifier decides whether a block settles at the cap, and a quantile
   regression forecasts the price on the blocks below it. The point forecast is the median of the mixture of the two
   stages. Prediction intervals come from the same mixture and are corrected with a margin learned on the 60 days before,
   separately for four levels of how much the model expects the cap.
-* **What I found.** **[to be filled]**
-  * Table R7: the final model against the baselines on the test days.
-  * Table R8: interval coverage, width and interval score, by cap state.
+* **What I found.**
+  * **Checks after the comparison** (`scripts/final_model_checks.py`; their figures are not published, because they come
+    from exchange prices).
+    * **Why two stages.** I gave the plain tuned LightGBM four inputs about the cap in the past: whether the same block a
+      day and a week earlier settled at the cap, and the share of cap blocks on the previous day and on the previous
+      seven days. They did not close the gap on the test days, and the two-stage model stayed clearly better.
+    * **The cap probability.** On the test days it separates cap blocks from the others well and is close to calibrated
+      overall. It is over-confident where it gives a probability between 0.6 and 0.9. The check is in the limitations.
+    * **Many comparisons.** With Holm's correction over the comparisons of the final model with each other forecast, the
+      final model is still significantly better than all of them except its own variant. Against the same block
+      yesterday it is better in every rolling fold, and significantly so after the correction in three of the five.
+  * Table R7: the final model against the baselines on the test days. **[to be filled if the exchange allows publication]**
+  * Table R8: interval coverage, width and interval score, by cap state. **[to be filled if the exchange allows publication]**
   * Note for the reader: I designed this model after the plain models had not met the criterion on the test days, so
     the test days are not a clean one-shot for it.
 * **What I understand.** **[to be filled]**
@@ -378,6 +389,10 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     daily commands on the real window gave the same result, with the price of the last day hidden and then settled, and
     the calibration table matched the backtest table on all 61 days. The model files are text files with a manifest of
     checksums, and nothing is pickled.
+  * **How long a day takes.** On this laptop (CPU only), refitting the model on all 358 published days takes between 9 and
+    19 seconds (two sets of three runs, with medians of 10.4 and 12.5 s) and forecasting one day takes about a third
+    of a second. The saved model is 5.2 MB. The command line takes about ten seconds to start (9.4 and 10.9 s in two
+    runs), because it imports libraries that the production path does not need. These are timings of the library calls, not of the commands end to end.
   * **Docker.** The image builds, the command line starts in it, and it holds no data. The app answers on this computer
     and not on the network address. The fit inside the container on the mounted window (358 days) gives forecasts
     that equal those fitted on Windows to four decimals on 2880 blocks, although the model files differ byte by byte.

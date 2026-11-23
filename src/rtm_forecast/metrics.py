@@ -82,3 +82,25 @@ def cap_scores(frame: pd.DataFrame, cap: float, forecast_share: float) -> pd.Dat
             else float("nan"),
         }
     return pd.DataFrame(rows).T
+
+
+def expected_calibration_error(
+    outcome: np.ndarray, probability: np.ndarray, bins: int = 10
+) -> float:
+    """Expected calibration error of probabilities for a yes/no outcome.
+
+    The probabilities are cut into ``bins`` equal-width bins. In each bin the absolute gap
+    between the mean probability and the observed share of yes is weighted by the share of
+    blocks in the bin.
+    """
+    outcome = np.asarray(outcome, dtype=float)
+    probability = np.asarray(probability, dtype=float)
+    edges = np.linspace(0.0, 1.0, bins + 1)
+    index = np.clip(np.digitize(probability, edges[1:-1]), 0, bins - 1)
+    total = 0.0
+    for b in range(bins):
+        inside = index == b
+        if inside.any():
+            gap = abs(outcome[inside].mean() - probability[inside].mean())
+            total += float(inside.mean()) * gap
+    return total

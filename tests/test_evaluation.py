@@ -3,8 +3,16 @@ import pandas as pd
 import pytest
 
 from rtm_forecast.backtest import rolling_origin
-from rtm_forecast.metrics import daily_mae, mae, mape, rmse, smape, summarise
-from rtm_forecast.significance import bootstrap_difference, diebold_mariano
+from rtm_forecast.metrics import (
+    daily_mae,
+    expected_calibration_error,
+    mae,
+    mape,
+    rmse,
+    smape,
+    summarise,
+)
+from rtm_forecast.significance import bootstrap_difference, diebold_mariano, holm_adjust
 from rtm_forecast.splits import make_periods
 
 
@@ -131,3 +139,19 @@ def test_confidence_set_drops_a_clearly_worse_model_and_keeps_equal_ones() -> No
     assert not pair.loc["bad", "in_set"]
     with pytest.raises(ValueError):
         model_confidence_set(losses[["a"]])
+
+
+def test_holm_adjustment_on_a_hand_worked_example() -> None:
+    adjusted = holm_adjust(np.array([0.04, 0.01, 0.03, 0.30]))
+    # sorted 0.01, 0.03, 0.04, 0.30 times 4, 3, 2, 1, made non-decreasing: 0.04, 0.09, 0.09, 0.30
+    assert adjusted == pytest.approx([0.09, 0.04, 0.09, 0.30])
+    assert holm_adjust(np.array([0.6, 0.9])) == pytest.approx([1.0, 1.0])
+    assert holm_adjust(np.array([0.02])) == pytest.approx([0.02])
+
+
+def test_calibration_error_is_zero_for_exact_frequencies_and_large_when_overconfident() -> None:
+    probability = np.array([0.25] * 4 + [0.75] * 4)
+    outcome = np.array([1, 0, 0, 0, 1, 1, 1, 0])
+    assert expected_calibration_error(outcome, probability) == pytest.approx(0.0)
+    sure = np.ones(10)
+    assert expected_calibration_error(np.array([1] * 5 + [0] * 5), sure) == pytest.approx(0.5)

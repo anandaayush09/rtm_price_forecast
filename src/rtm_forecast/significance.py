@@ -26,6 +26,21 @@ def diebold_mariano(loss_a: np.ndarray, loss_b: np.ndarray) -> tuple[float, floa
     return statistic, p_value
 
 
+def holm_adjust(p_values: np.ndarray) -> np.ndarray:
+    """Holm's step-down adjustment of a family of p-values.
+
+    The smallest p-value is multiplied by the number of tests, the next by one less, and so on;
+    each adjusted value is at least as large as the one before it and at most 1. Rejecting the
+    tests with an adjusted value below 0.05 keeps the chance of any false rejection below 0.05.
+    """
+    p = np.asarray(p_values, dtype=float)
+    order = np.argsort(p, kind="stable")
+    scaled = (len(p) - np.arange(len(p))) * p[order]
+    adjusted = np.empty(len(p))
+    adjusted[order] = np.minimum(1.0, np.maximum.accumulate(scaled))
+    return adjusted
+
+
 def bootstrap_difference(
     loss_a: np.ndarray, loss_b: np.ndarray, draws: int = 5000, seed: int = 0
 ) -> tuple[float, float]:

@@ -31,7 +31,7 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 5. **Benchmark.** Naive forecasts, linear and statistical models, boosted trees, pretrained and neural time-series
    models, all on the same splits with rolling-origin evaluation, and significance tests (Diebold-Mariano, model
    confidence set).
-6. **A forecast that knows the price cap.** A large share of the error comes from blocks that settle exactly at
+6. **A forecast that knows the price cap.** Almost half of the blocks on the test days settle exactly at
    the exchange cap, so the final model first decides whether a block settles at the cap and then forecasts the
    price below it. Its prediction intervals are corrected with a margin learned on the days before.
 7. **Engineering.** A package, a command line, an app, tests, continuous integration and a Docker image.
@@ -81,7 +81,7 @@ flowchart TD
 | `app/` | the Streamlit app |
 | `config/`, `params.yaml` | holiday lists with their sources, all settings |
 | `notebooks/` | executed notebooks: audit, exploration, Phase 1 check, preprocessing, model comparison |
-| `scripts/` | the benchmark, significance, interval and model-card scripts (2020-21 and 2025-26), and the checks of Phase 1 |
+| `scripts/` | the benchmark, significance, interval, model-card and final-model check scripts (2020-21 and 2025-26), and the checks of Phase 1 |
 | `kaggle/` | the GPU notebook |
 | `tests/` | the tests |
 | `docs/` | the [report](docs/report.md), the [data card](docs/data_card.md) and the figures |
