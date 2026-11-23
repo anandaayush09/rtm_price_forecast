@@ -26,6 +26,9 @@ This page lists what the work does not show, and what I would do next.
   with Holm's correction (`scripts/final_model_checks.py`): the final model stays significantly better than each other
   forecast except its own variant. Against the same block yesterday it is better in every rolling fold, but the
   difference is significant after the correction in three of the five folds only.
+* **Twenty-two new days.** The check on 1 to 22 Nov 2026 is short, and in that stretch few blocks settle at the
+  cap, so it says little about months with many. The model calls the cap less well there (F1 0.765 against 0.923 on
+  the test days).
 * **The final model was designed after the test days were seen.** The plain models did not meet the success
   criterion I had set before tuning. I then built the cap-aware model. The test period is therefore not a clean
   one-shot for it. Its choice between two variants was made on the validation days only, but the results should be
@@ -58,16 +61,19 @@ This page lists what the work does not show, and what I would do next.
 * The app runs on one computer and reads local files. The command line takes six to eleven seconds to start on this
   computer, mostly the time to import LightGBM and the libraries it loads.
 * The exchange's terms of use limit its content to personal, non-commercial use and do not allow copying or
-  distributing it without permission (see the data card). This repository therefore publishes no 2025-26 price
-  figures and no result tables derived from them. I have not checked the terms of the other sources.
+  distributing it without permission (see the data card). This repository therefore holds no 2025-26 price files
+  or prices per block. It does publish scores and summary statistics computed from them, and I have not asked the
+  exchange whether that is allowed. I have not checked the terms of the other sources.
 
 ## Future scope
 
 * Verify the gate-closure and result times, and fix the real intraday lead.
 * Look at coverage fold by fold, and try a calibration that treats the regime of the last weeks separately.
 * Add TabPFN and Chronos-2 to the GPU notebook.
-* Score the frozen final model on days after 31 Oct 2026 as a true hold-out. The daily commands already support
-  this: each forecast is stored and settled when the prices are published.
+* Keep scoring the final model on days after 31 Oct 2026. The 22 days of 1 to 22 Nov 2026 are scored (the model
+  is refitted each day), but they are few and only 7.3 percent of their blocks settle at the cap. The daily commands
+  already support this: each forecast is stored and settled when the prices are published.
 * Add state holidays, and handle the change in the demand definition explicitly.
 * Watch the share of blocks at the cap over time, and run the daily commands on a schedule.
-* Publish the app and the result tables once the exchange allows it.
+* Ask the exchange whether the published scores and summary statistics are allowed, and publish the app with data
+  only once it allows it.

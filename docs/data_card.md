@@ -26,7 +26,7 @@ A block is 15 minutes, so a day has 96 blocks.
   website for prices and bids and the Vidyut Pravah site for demand.
 
 See Terms of use below for what I have and have not checked. The 2025-26 files are not in the repository, and no
-price figures from them are published here.
+prices per block from them are published here; the report gives scores and summary statistics computed from them.
 
 ## Terms of use
 
@@ -34,8 +34,9 @@ price figures from them are published here.
   website belongs to IEX and its licensors, that it may be used for personal, non-commercial purposes only, that it
   must not be downloaded, copied, extracted or distributed unless IEX expressly allows it, and that IEX must be
   credited as the source. I found no separate market-data licence. I do not read the terms as permitting a public
-  repository to hold files or tables of exchange prices, so I publish none for 2025-26, and I do not know whether the
-  2020-21 file that came with the 2021 project may stay here. Everything else here is my own code, tests and
+  repository to hold files or tables of exchange prices, so I publish none for 2025-26. I do publish scores and
+  summary statistics computed from the prices, and I have not asked the exchange whether that is allowed. I do not
+  know whether the 2020-21 file that came with the 2021 project may stay here. Everything else here is my own code, tests and
   descriptions.
 * **Grid-India and the holiday lists.** I have not checked the terms of the daily power supply position reports or of
   the government holiday memoranda.

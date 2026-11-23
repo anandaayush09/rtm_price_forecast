@@ -4,9 +4,8 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 15-minute block of the day, from price, bid and demand data.
 
 > The [report](docs/report.md) covers the data audit, the exploration, the check of Phase 1, the features, the
-> comparison of models on the 2020-21 data, and the engineering. The results on the 2025-26 window are not published:
-> the exchange's terms of use do not allow me to copy or distribute its content without permission (see
-> [Data](#data)).
+> comparison of models on the 2020-21 and 2025-26 data, and the engineering. The results on the 2025-26 window are
+> scores and summary statistics; the exchange files and prices are not included (see [Data](#data)).
 
 ## Project stages
 
@@ -54,6 +53,26 @@ MSTL with exponential smoothing, LightGBM, CatBoost, the two Phase 1 models (ran
 Chronos-Bolt and TimesFM (pretrained, no training on this data), N-HiTS and TFT (trained per fold), and the
 two-stage cap-aware forecast with intervals (day ahead and intraday). The pretrained and neural models run in a GPU notebook
 ([`kaggle/`](kaggle/README.md)); everything else runs on a CPU.
+
+## Results on the 2025-26 window
+
+Mean absolute error in INR/MWh on the 60 test days (2 Sep to 31 Oct 2026), day ahead. rMAE is the error divided by
+that of the same block yesterday. Almost half of these blocks (46.6 percent) settle at the cap.
+
+| Forecast | MAE | rMAE |
+|---|---|---|
+| Final model (two-stage, cap-aware) | 736.0 | 0.853 |
+| LightGBM | 800.1 | 0.927 |
+| CatBoost | 812.6 | 0.941 |
+| Same block yesterday | 863.2 | 1.000 |
+| XGBoost (Phase 1) | 955.8 | 1.107 |
+| Random forest (Phase 1) | 987.4 | 1.144 |
+| DAM price | 1060.6 | 1.229 |
+
+The final model is 14.7 percent below yesterday's price (p = 0.0021) and is the best in all five rolling folds. I
+designed it after the plain models had not met my success criterion on these days, so the test days are not a clean
+test for it. On 22 days after the window (1 to 22 Nov 2026) it scored 650.8 against 901.9 for yesterday's price. The
+report has all models, the intraday and interval results, and the limits.
 
 ## How it fits together
 
@@ -125,8 +144,9 @@ docker compose up app                         # then open http://localhost:8501
 
 The exchange files and the demand reports of 2025-26 are not included, and I do not redistribute them.
 `docs/data_card.md` names the sources and describes what I did with them. The exchange's terms of use limit its
-content to personal, non-commercial use and do not allow copying or distributing it without permission, which is
-why this repository holds no price figures from 2025-26. I have not checked the terms of the other sources. The
+content to personal, non-commercial use and do not allow copying or distributing it without permission. This
+repository holds no exchange files and no prices per block from 2025-26. It holds scores and summary statistics
+computed from them, which I have not cleared with the exchange. I have not checked the terms of the other sources. The
 2020-21 file in `data/raw/` came with the 2021 project. Read the terms of use of each source before you share a file
 or a table of prices.
 

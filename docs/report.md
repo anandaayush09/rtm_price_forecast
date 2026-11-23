@@ -1,14 +1,31 @@
 # Forecasting real-time electricity prices on the Indian Energy Exchange
 
-Report on Phase 2. Sections marked **[to be filled]** wait for results on the 2025-26 window, which come from exchange
-prices that I publish only if the exchange allows it (see the [data card](data_card.md)). The summary and the
-conclusion are marked because they depend on those results. Sections without a mark are written; they use the
-2020-21 data for the figures and the counts of the 2025-26 window for the data audit.
+Report on Phase 2. The figures for the 2020-21 data come from the file that belongs to the 2021 project. For the
+2025-26 window I publish scores and summary statistics computed from the exchange prices, not the prices or the
+exchange files (see the [data card](data_card.md) for the terms of use and what I have not asked).
 
 ## Summary
 
-**[to be filled, written last]** Three short paragraphs: the question, the main result against the baselines and
-against the Phase 1 models, and what the result does not show.
+**The question.** Once the day-ahead market (DAM) results of a day are known, how well can I forecast the real-time
+market (RTM) price of each of its 96 blocks, compared with simple forecasts and with the two models of my 2021
+notebook? I asked it on the 111 days of 2020-21 and on a window of 365 days from 1 Nov 2025 to 31 Oct 2026, where the
+last 60 days (2 Sep to 31 Oct 2026) are the test days.
+
+**The result.** On the 2020-21 data, five learning models beat the DAM price by 13 to 17 percent in mean absolute error, and I could
+not separate them from one another on 21 days. On the 2025-26 window, almost half of the
+test blocks (46.6 percent) settle at the exchange cap of 10000 INR/MWh. The tuned LightGBM and CatBoost models were
+not significantly better than the same block yesterday (mean absolute error 800.1 and 812.6 against 863.2, p = 0.069
+and 0.117), and the two Phase 1 models were worse than yesterday (955.8 and 987.4). The success criterion that I fixed
+before tuning was not met by any of these models. I then built a two-stage model that first decides whether a block
+settles at the cap. It has a mean absolute error of 736.0, which is 14.7 percent below yesterday's (p = 0.0021) and
+significantly below both Phase 1 models, it is in the 90 percent model confidence set, and it is the best model in all
+five rolling folds. On 22 days after the window (1 to 22 Nov 2026), forecast one day at a time as the daily commands do,
+it scored 650.8 against 901.9 for yesterday.
+
+**What it does not show.** I designed the two-stage model after the plain models had missed the criterion on the
+test days, so those days are not a clean test for it, and the 22 new days are a short check, in a month when only
+7.3 percent of blocks settled at the cap. One window of one market says little about other years. The tests have little
+power with 60 days. I did not model costs or bidding, so a better forecast is not a trading result.
 
 ## 1. Question and setup
 
@@ -101,8 +118,8 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
 * **What I did.** Daily and weekly profiles, the gap between the DAM and RTM prices, autocorrelation, a seasonal
   decomposition, volatility, the relation to demand and the spikes, on the 2020-21 data in notebook 02. I did the same
   kind of exploration on the 2025-26 window, including the price cap.
-* **What I found.** The figures below are from the 2020-21 data. The exchange's terms of use do not allow me to copy or
-  distribute its content without permission, so I do not publish figures from the 2025-26 window.
+* **What I found.** The figures below are from the 2020-21 data, except the last item, which gives summary figures of
+  the 2025-26 window.
   * **Daily and weekly shape.** Prices have two peaks a day, in the late morning and the early evening. On weekdays the
     lowest average RTM price is in block 16 (2083 INR/MWh) and the highest in block 74 (4144). Only Sunday is a low
     day: its mean RTM price is 2550, while Saturday (2891) is close to the weekdays (2784 to 2963). My first notebook
@@ -148,7 +165,17 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   * **Spikes.** 268 blocks lie above 5292 INR/MWh (the mean plus three standard deviations), on 42 days. Most fall in
     hours 8 to 10 (92 blocks) and hours 17 to 19 (142 blocks). December has 106 of them and January 96, although
     January has only 19 days in the data.
-  * **2025-26 window, including the price cap.** **[to be filled if the exchange allows publication]**
+  * **2025-26 window, including the price cap.** Of the 35026 blocks with a published price in the 365 days, 19.8
+    percent (6930) settle exactly at the cap of 10000 INR/MWh, and at least one block does so on 288 of the 365 days. The
+    share changes a lot over the year: 5.4 percent in November 2025, 5.4 to 10.6 percent from December to March, 26.8
+    percent in April, 18.0 to 21.8 percent from May to August, then 55.1 percent in September and 38.5 percent in
+    October. On 52 days at least half of the 96 blocks are at the cap. The mean RTM price rises from 3136 INR/MWh in
+    November 2025 to 6906 in September 2026, and over the window it is 4417 (median 3300). In the test days (2 Sep to 31
+    Oct) 46.6 percent of the blocks are at the cap and the mean is 6321. The DAM price is at the cap in 24.9 percent of
+    the blocks. Unlike in 2020-21, the RTM price is below the DAM price on average (mean gap -408, RTM above DAM in
+    38.2 percent of blocks), and the correlation of the two is 0.841. The RTM price is 0 in 21 blocks.
+    Because the cap share is low in the first months and high in the last two, the training days are less like the test
+    days than in a calmer year.
 * **What I understand.** The market has a clear daily shape, a Sunday dip, rising volatility and spikes in two daily
   windows. The DAM price of the same block and yesterday's RTM price at the same block are the most informative
   inputs I have, and a good model has to do more than copy either. Rising volatility means that a test period near
@@ -320,11 +347,115 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   * **The Phase 1 test day under this protocol.** On 19 January 2021, the day my first notebook used alone, no model
     beats yesterday's price on MAE (431.57). LEAR is the closest (480.16) and has a slightly lower MAPE (10.64 against
     10.98). The other models have MAEs from 640.53 to 708.76.
-  * **2025-26 window.** **[to be filled if the exchange allows publication]**
-    * Table R1: day-ahead scores on the test days, one row per model (MAE, RMSE, rMAE, cap F1).
-    * Table R2: the same on the validation days, marked as optimistic for tuned models.
-    * Table R3: the five rolling folds.
-    * Table R4: intraday scores for the leads 1, 2, 4 and 8.
+  * **2025-26 window.** The training days are 1 Nov 2025 to 2 Aug 2026 (268 days), the validation days 3 Aug to 1 Sep
+    (30 days) and the test days 2 Sep to 31 Oct (60 days). Every model is refitted each day on the days before it. The
+    final model of section 2.7 is in the tables, because it came out of this comparison; the rest of this section
+    reads the other models. The pretrained models (TimesFM and Chronos-Bolt) and the neural models (N-HiTS and TFT)
+    ran in the notebook `kaggle/foundation_models.ipynb`, as set up there, and I did not tune them on this window.
+    Units are INR/MWh; rMAE is the MAE divided by the MAE of the same block yesterday; the cap F1 is the F1 of calling
+    a block at the cap.
+
+    *Table R1. Day-ahead scores on the 60 test days, best MAE first.*
+
+    | Model | MAE | RMSE | rMAE | Cap F1 |
+    |---|---|---|---|---|
+    | Final model (two-stage, median of the mixture) | 736.0 | 1644.4 | 0.853 | 0.923 |
+    | Two-stage, hard cap call | 745.1 | 1688.5 | 0.863 | 0.923 |
+    | LightGBM | 800.1 | 1547.9 | 0.927 | 0.894 |
+    | CatBoost | 812.6 | 1535.4 | 0.941 | 0.887 |
+    | Same block yesterday | 863.2 | 1776.0 | 1.0 | 0.909 |
+    | TimesFM | 954.1 | 1662.2 | 1.105 | 0.872 |
+    | Chronos-Bolt | 955.2 | 1674.7 | 1.107 | 0.844 |
+    | XGBoost (Phase 1) | 955.8 | 1591.1 | 1.107 | 0.801 |
+    | Random forest (Phase 1) | 987.4 | 1580.9 | 1.144 | 0.753 |
+    | LEAR | 1037.0 | 1559.8 | 1.201 | 0.742 |
+    | DAM price | 1060.6 | 2164.9 | 1.229 | 0.879 |
+    | N-HiTS | 1232.6 | 1814.6 | 1.428 | 0.735 |
+    | MSTL-ETS | 1387.8 | 1934.0 | 1.608 | 0.726 |
+    | TFT | 1394.0 | 2208.1 | 1.615 | 0.699 |
+    | Same block last week | 1929.0 | 3179.2 | 2.235 | 0.745 |
+
+    * LightGBM (800.1) and CatBoost (812.6) have the lowest MAE of the plain models, 7.3 and 5.9 percent below the same
+      block yesterday (863.2). Both Phase 1 models are worse than yesterday (rMAE 1.107 for XGBoost and 1.144 for the
+      random forest), and so is the DAM price (1.229).
+    * The ranking by RMSE differs from the ranking by MAE. CatBoost (1535.4) and LightGBM (1547.9) have a lower RMSE
+      than the final model (1644.4), which forecasts the median and so is closer on most blocks and further off on a few
+      large misses.
+    * LEAR, the best model of 2020-21, is in the lower half here (rMAE 1.201). TimesFM and Chronos-Bolt, as run here,
+      are about 10 percent worse than yesterday, and N-HiTS and TFT are worse than that.
+
+    *Table R2. The same on the 30 validation days. The tuned models (LEAR, LightGBM, CatBoost) were tuned on these
+    days, so their scores are optimistic.*
+
+    | Model | MAE | RMSE | rMAE | Cap F1 |
+    |---|---|---|---|---|
+    | Final model (two-stage, median of the mixture) | 992.9 | 1749.1 | 0.772 | 0.791 |
+    | Two-stage, hard cap call | 1017.4 | 1848.7 | 0.791 | 0.791 |
+    | CatBoost | 1054.2 | 1685.6 | 0.82 | 0.663 |
+    | LightGBM | 1073.1 | 1711.2 | 0.834 | 0.669 |
+    | N-HiTS | 1148.5 | 1656.8 | 0.893 | 0.533 |
+    | LEAR | 1170.2 | 1674.8 | 0.91 | 0.327 |
+    | DAM price | 1179.2 | 2067.4 | 0.917 | 0.764 |
+    | XGBoost (Phase 1) | 1180.2 | 1699.7 | 0.918 | 0.369 |
+    | Random forest (Phase 1) | 1189.8 | 1698.4 | 0.925 | 0.313 |
+    | Chronos-Bolt | 1241.4 | 1825.3 | 0.965 | 0.474 |
+    | TimesFM | 1243.5 | 1847.3 | 0.967 | 0.475 |
+    | Same block yesterday | 1286.2 | 2122.5 | 1.0 | 0.707 |
+    | TFT | 1296.2 | 1931.3 | 1.008 | 0.482 |
+    | Same block last week | 1747.9 | 2681.9 | 1.359 | 0.596 |
+    | MSTL-ETS | 1891.4 | 2390.9 | 1.471 | 0.503 |
+
+    On the validation days yesterday's price is among the weakest forecasts (rMAE 1.000 against 0.82 and 0.83 for
+    CatBoost and LightGBM). The test days reverse that for the plain models, which is the mismatch between validation
+    and test that I saw in 2020-21 too.
+
+    *Table R3. MAE in each of the five rolling folds of 30 days each (4 Jun to 3 Jul, 4 Jul to 2 Aug, 3 Aug to 1 Sep,
+    2 Sep to 1 Oct and 2 Oct to 31 Oct). Fold 3 is the validation period and folds 4 and 5 are the test days.*
+
+    | Model | Fold 1 | Fold 2 | Fold 3 | Fold 4 | Fold 5 |
+    |---|---|---|---|---|---|
+    | Final model (two-stage, median of the mixture) | 1249 | 965 | 993 | 735 | 737 |
+    | Two-stage, hard cap call | 1281 | 999 | 1017 | 752 | 739 |
+    | LightGBM | 1306 | 1014 | 1073 | 815 | 785 |
+    | CatBoost | 1268 | 995 | 1054 | 818 | 807 |
+    | Same block yesterday | 1399 | 1183 | 1286 | 803 | 923 |
+    | TimesFM | 1377 | 1342 | 1243 | 969 | 939 |
+    | Chronos-Bolt | 1325 | 1233 | 1241 | 986 | 925 |
+    | XGBoost (Phase 1) | 1338 | 1101 | 1180 | 955 | 956 |
+    | Random forest (Phase 1) | 1339 | 1113 | 1190 | 996 | 978 |
+    | LEAR | 1317 | 1146 | 1170 | 1050 | 1024 |
+    | DAM price | 1503 | 1035 | 1179 | 898 | 1223 |
+    | N-HiTS | 1576 | 1262 | 1149 | 1398 | 1067 |
+    | MSTL-ETS | 1830 | 1858 | 1891 | 1478 | 1297 |
+    | TFT | 1442 | 1222 | 1296 | 1413 | 1375 |
+    | Same block last week | 1751 | 2241 | 1748 | 1963 | 1895 |
+
+    The final model has the lowest MAE in all five folds. LightGBM and CatBoost are below yesterday's price in four of
+    the five folds and above it in fold 4 (815 and 818 against 803).
+
+    *Table R4. Intraday MAE on the test days at the leads 1, 2, 4 and 8 blocks, best at lead 1 first. The last known
+    price is the latest published RTM price at that lead. Yesterday's price and the DAM price do not depend on the
+    lead.*
+
+    | Model | Lead 1 | Lead 2 | Lead 4 | Lead 8 |
+    |---|---|---|---|---|
+    | Final model (two-stage, median of the mixture) | 268.6 | 399.6 | 515.4 | 620.4 |
+    | Two-stage, hard cap call | 275.1 | 404.1 | 518.9 | 625.9 |
+    | LightGBM | 307.1 | 462.1 | 610.3 | 727.7 |
+    | Last known price | 320.9 | 559.0 | 955.2 | 1617.8 |
+    | TimesFM | 322.9 | 496.3 | 663.3 | 782.8 |
+    | CatBoost | 324.9 | 469.1 | 602.9 | 703.2 |
+    | Last known price moved by the DAM change | 363.3 | 577.6 | 812.1 | 973.5 |
+    | Chronos-Bolt | 373.1 | 511.9 | 668.7 | 774.7 |
+    | LEAR | 419.8 | 638.4 | 851.6 | 993.3 |
+    | N-HiTS | 454.3 | 629.2 | 806.4 | 1015.8 |
+    | TFT | 568.4 | 721.4 | 938.5 | 1137.5 |
+    | Same block yesterday | 863.0 | 863.2 | 863.3 | 863.2 |
+    | DAM price | 1061.1 | 1061.2 | 1061.0 | 1060.6 |
+
+    The final model has the lowest MAE at every lead (268.6 at lead 1 and 620.4 at lead 8). The last known price
+    degrades quickly as the lead grows (320.9 at lead 1, 1617.8 at lead 8) and is worse than yesterday's price at
+    leads 4 and 8. The leads are in blocks and are not tied to the gate-closure times of the exchange.
 * **What I understand.**
   * **From the 2020-21 data.** The learning models are about 17 percent better than the DAM price (LEAR 412.43 against
     499.08), and the tests support that gain (p from 0.002 to 0.014 against the best simple forecast). They cannot be
@@ -334,18 +465,96 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     trees suggests that, once the day-ahead price and volumes are known, the relationship is simple. The mismatch between
     validation and test rankings is a warning against reading a ranking from a short period. It is also why the same
     comparison runs on a year of newer data, with neural and pretrained models added.
-  * **From the 2025-26 window.** **[to be filled if the exchange allows publication]**
+  * **From the 2025-26 window.** The ranking of 2020-21 does not carry over. LEAR, the best model there, and the Phase 1
+    models are worse than the same block yesterday here, and the plain boosted trees are only a little better. A
+    reason may be the cap: almost half of the test blocks settle at 10000, up to 72 blocks of a day do so, and
+    yesterday's price is a better forecast of those blocks (error 383.2) than LightGBM (416.9), which averages and is
+    pulled below the cap. Models that predict the cap (section 2.7) are where the gain is. The pretrained and neural
+    models, as I ran them, did not beat yesterday either, so I treat the result as one of this setup and not as a
+    statement about those model families. The plain models are 17 to 18 percent better than yesterday's price on the
+    validation days and 6 to 7 percent better on the test days, which is why I read the five folds and not one period.
 
 ### 2.6 Significance, uncertainty and errors
 
 * **Why.** A lower error on 60 days can be luck.
 * **What I did.** Diebold-Mariano tests against the best simple forecast and both Phase 1 models, bootstrap intervals,
   the 90 percent model confidence set, and an error analysis by block, weekday and price level.
-* **What I found.** **[to be filled]**
-  * Table R5: pairwise tests on the day-ahead task.
-  * Table R6: model confidence set membership, day ahead and by lead.
-  * Whether the success criterion is met, stated with the limits in section 4.
-* **What I understand.** **[to be filled]**
+* **What I found.** On the 60 test days of the 2025-26 window. A negative difference means a lower error than the
+  reference.
+
+  *Table R5. Mean daily MAE difference from the same block yesterday, its 95 percent bootstrap interval, and the
+  one-sided Diebold-Mariano p-values that the model is better than yesterday, than the Phase 1 random forest and than
+  the Phase 1 XGBoost.*
+
+  | Model | Mean daily MAE difference from yesterday | 95% interval | p vs yesterday | p vs random forest (Phase 1) | p vs XGBoost (Phase 1) |
+  |---|---|---|---|---|---|
+  | Final model (two-stage, median of the mixture) | -127.2 | -213.1 to -47.4 | 0.0021 | < 0.0001 | < 0.0001 |
+  | Two-stage, hard cap call | -118.1 | -198.5 to -43.0 | 0.0022 | < 0.0001 | < 0.0001 |
+  | LightGBM | -63.0 | -148.9 to 13.9 | 0.0692 | < 0.0001 | < 0.0001 |
+  | CatBoost | -50.5 | -135.1 to 28.3 | 0.1172 | < 0.0001 | < 0.0001 |
+  | TimesFM | 90.9 | -6.6 to 180.5 | 0.9681 | 0.1594 | 0.4795 |
+  | Chronos-Bolt | 92.1 | 22.3 to 158.1 | 0.9944 | 0.1119 | 0.4919 |
+  | XGBoost (Phase 1) | 92.6 | 17.6 to 162.3 | 0.9917 | 0.0056 |  |
+  | Random forest (Phase 1) | 124.2 | 45.4 to 201.1 | 0.9986 |  | 0.9944 |
+  | LEAR | 173.8 | 83.1 to 257.4 | 0.9999 | 0.9652 | 0.9981 |
+  | DAM price | 197.4 | 24.4 to 382.7 | 0.9813 | 0.8238 | 0.9062 |
+  | N-HiTS | 369.4 | 233.2 to 499.0 | 1.0000 | 1.0000 | 1.0000 |
+  | MSTL-ETS | 524.7 | 411.5 to 640.6 | 1.0000 | 1.0000 | 1.0000 |
+  | TFT | 530.8 | 324.1 to 774.8 | 1.0000 | 0.9999 | 0.9999 |
+  | Same block last week | 1065.8 | 715.2 to 1467.2 | 1.0000 | 1.0000 | 1.0000 |
+
+  *Table R6a. The 90 percent model confidence set on the test days, day ahead. The p-value is that of the step at
+  which the model was removed, or of the whole set.*
+
+  | Model | In the 90% set | Set p-value |
+  |---|---|---|
+  | Two-stage, hard cap call | yes | 0.1014 |
+  | Final model (two-stage, median of the mixture) | yes | 0.1014 |
+  | CatBoost | yes | 0.1014 |
+  | DAM price | yes | 0.1014 |
+  | LightGBM | yes | 0.1014 |
+  | Same block yesterday | yes | 0.1014 |
+  | MSTL-ETS | no | 0.0004 |
+  | Same block last week | no | 0.008 |
+  | N-HiTS | no | 0.008 |
+  | TFT | no | 0.008 |
+  | XGBoost (Phase 1) | no | 0.008 |
+  | Random forest (Phase 1) | no | 0.008 |
+  | LEAR | no | 0.008 |
+  | TimesFM | no | 0.0088 |
+  | Chronos-Bolt | no | 0.0088 |
+
+  *Table R6b. The models in the 90 percent set at each intraday lead on the test days.*
+
+  | Lead | Models in the 90% set |
+  |---|---|
+  | 1 | Final model (two-stage, median of the mixture) |
+  | 2 | Two-stage, hard cap call; Final model (two-stage, median of the mixture) |
+  | 4 | Two-stage, hard cap call; Final model (two-stage, median of the mixture) |
+  | 8 | Two-stage, hard cap call; Final model (two-stage, median of the mixture) |
+
+  * **Success criterion.** It asks for a model that beats the best simple forecast and both Phase 1 models with
+    p < 0.05 and is in the 90 percent set. The best simple forecast on these days is yesterday's price. No plain model
+    meets it: LightGBM beats yesterday with p = 0.069 and CatBoost with p = 0.117, and both are inside the set. The
+    final model of section 2.7 meets all three conditions (p = 0.0021 against yesterday, p < 0.0001 against both Phase 1
+    models, member of the set), with the limit that I designed it after seeing that the plain models did not.
+  * **The set is wide.** Six forecasts are in the day-ahead set, among them yesterday's price and the DAM price. With
+    60 days the tests cannot separate the leaders from them, even though the final model is significantly better than
+    yesterday's price in a pairwise test. The set shrinks at the intraday leads: only the final model is in it at lead
+    1, and it and its variant with a hard cap call at the leads 2, 4 and 8.
+  * **Where the errors are.** For the final model against yesterday's price on the test days, by time of day the
+    errors are lower in the early hours (567 against 736), in the morning (803 against 939) and in the afternoon (907
+    against 1108), and about equal in the evening (667 against 670). By weekday they are lower on every day except
+    Thursday (898 against 890) and Friday (635 against 587). By price level, they are lower on blocks that settle at the
+    cap (237 against 383), on blocks from 2000 to below 5000 (981 against 1171) and on blocks from 5000 to below the cap
+    (2283 against 2354), and higher on blocks below 2000 (1231 against 1109). The blocks at the cap carry 15.0 percent of
+    the absolute error of the final model and 20.7 percent of that of yesterday's price.
+* **What I understand.** The evidence is strong for the Phase 1 models, which are clearly worse than yesterday's price
+  and than every model that sees the cap, and weak for the plain tuned models, which are 6 to 7 percent better than
+  yesterday's price and not significantly so. The final model's gain is large and survives the correction for the
+  number of comparisons (section 2.7), but the test days are the days on which I chose to build it. The errors are
+  spread over the day and the week, not concentrated in one hour or one weekday, and the cheapest blocks are the one place
+  where yesterday's price is still better. A check on days that I did not use is in section 2.8.
 
 ### 2.7 The final model
 
@@ -357,28 +566,73 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   separately for four levels of how much the model expects the cap.
 * **What I found.**
   * **Checks after the comparison** (`scripts/final_model_checks.py`, `scripts/cap_aware_variants.py` and
-    `scripts/benchmark_intraday.py`; their figures are not published, because they come from exchange prices).
+    `scripts/benchmark_intraday.py`; they need the window table, which is not in the repository).
     * **Why two stages.** I gave the plain tuned LightGBM four inputs about the cap in the past: whether the same block a
       day and a week earlier settled at the cap, and the share of cap blocks on the previous day and on the previous
-      seven days. They did not close the gap on the test days, and the two-stage model stayed clearly better.
+      seven days. They did not close the gap on the test days (MAE 815.3 against 800.1 without them), and the two-stage model (736.0)
+      stayed clearly better; the difference to the plain model is significant (p = 0.0002).
     * **The cap probability.** On the test days it separates cap blocks from the others well and is close to calibrated
-      overall. It is over-confident where it gives a probability between 0.6 and 0.9. The check is in the limitations.
+      overall (Brier score 0.0579, area under the curve 0.976, expected calibration error 0.029). It is over-confident
+      where it gives a probability between 0.6 and 0.9. The check is in the limitations.
     * **Many comparisons.** With Holm's correction over the comparisons of the final model with each other forecast, the
-      final model is still significantly better than all of them except its own variant. Against the same block
-      yesterday it is better in every rolling fold, and significantly so after the correction in three of the five.
+      final model is still significantly better than all of them except its own variant (corrected p = 0.148). The
+      corrected p-value against yesterday's price is 0.0043, and the largest against any other model is 0.0006
+      (LightGBM). Against the same block yesterday it is better in every rolling fold, and significantly so after the
+      correction in three of the five (folds 2, 3 and 5, corrected p = 0.023, 0.023 and 0.021).
     * **Recency weighting and recalibration.** I weighted recent days more (half-lives of 30, 60 and 120 days) and
       recalibrated the cap probability with an isotonic regression on the 60 days before each day, and chose among the
-      variants on the validation days only. The variant that won there, a half-life of 60 days with recalibration, was
-      worse than the final model on the test days. Recalibration alone changed the error very little. The final model
+      variants on the validation days only. The variant that won there, a half-life of 60 days with recalibration, scored
+      960.8 against 992.9 for the final model on the validation days, but 762.8 against 736.0 on the test days.
+      Recalibration alone changed the error very little (736.7 against 736.0). The final model
       keeps equal weights and the probability as it is.
     * **Intraday.** The same two-stage model on the intraday task has the lowest error of all models at each of the
-      four leads on the test days, and it is significantly better than the last known price at each of them. The
-      same caveat as for the day-ahead model applies.
-  * Table R7: the final model against the baselines on the test days. **[to be filled if the exchange allows publication]**
-  * Table R8: interval coverage, width and interval score, by cap state. **[to be filled if the exchange allows publication]**
+      four leads on the test days (Table R4), and it is significantly better than the last known price at each of them
+      (p < 0.0001). The same caveat as for the day-ahead model applies.
+  * **Against the baselines.** The final model has a mean absolute error of 736.0 on the 60 test days, 14.7 percent below
+    yesterday's price, and 8.0 percent below the plain LightGBM (800.1). Its gain comes from the cap: on blocks at the cap
+    its error is 237.4 against 383.2 for yesterday's price and 416.9 for LightGBM, and on the other blocks it
+    is better than yesterday's price (1171.3 against 1282.2) but not than LightGBM (1134.8). Only the DAM price
+    has a lower error on cap blocks (95.5), at the price of a much higher error on the others (1903.3).
+
+    *Table R7. The final model against the baselines on the 60 test days.*
+
+    | Model | MAE | rMAE | RMSE | Cap F1 | MAE on cap blocks | MAE on other blocks |
+    |---|---|---|---|---|---|---|
+    | Final model (two-stage, median of the mixture) | 736.0 | 0.853 | 1644.4 | 0.923 | 237.4 | 1171.3 |
+    | Two-stage, hard cap call | 745.1 | 0.863 | 1688.5 | 0.923 | 276.5 | 1154.3 |
+    | LightGBM | 800.1 | 0.927 | 1547.9 | 0.894 | 416.9 | 1134.8 |
+    | CatBoost | 812.6 | 0.941 | 1535.4 | 0.887 | 444.2 | 1134.3 |
+    | Same block yesterday | 863.2 | 1.0 | 1776.0 | 0.909 | 383.2 | 1282.2 |
+    | DAM price | 1060.6 | 1.229 | 2164.9 | 0.879 | 95.5 | 1903.3 |
+    | XGBoost (Phase 1) | 955.8 | 1.107 | 1591.1 | 0.801 | 624.1 | 1245.5 |
+    | Random forest (Phase 1) | 987.4 | 1.144 | 1580.9 | 0.753 | 709.5 | 1230.0 |
+
+  * **Intervals.** The 50 and 90 percent intervals come from the mixture and are corrected with the margin learned on
+    the 60 days before, by the four levels of how much the model expects the cap (called, likely, possible, unlikely).
+    On the test days the 90 percent interval holds 92.2 percent of the published prices and the 50 percent interval
+    71.5 percent, so the 50 percent interval is too wide. The 90 percent interval is close to its level overall and
+    holds almost all cap blocks (98.8 percent), but only 86.4 percent of the blocks below the cap. When the model
+    calls the cap, 94.4 percent are inside; where it sees the cap as unlikely, 89.0 percent. With the same correction,
+    the plain LightGBM has an interval score of 2971 at 50 percent and 7302 at 90 percent, against 2503 and 5205 for
+    the final model.
+
+    *Table R8. Coverage, mean width and interval score of the corrected intervals on the test days, and coverage by
+    cap state. Width and score are in INR/MWh.*
+
+    | Level | Coverage | Mean width | Interval score | Cap blocks | Other blocks | Cap called | Cap likely | Cap possible | Cap unlikely |
+    |---|---|---|---|---|---|---|---|---|---|
+    | 50% | 0.715 | 931.0 | 2503.0 | 0.974 | 0.488 | 0.907 | 0.75 | 0.532 | 0.506 |
+    | 90% | 0.922 | 2741.0 | 5205.0 | 0.988 | 0.864 | 0.944 | 0.935 | 0.947 | 0.89 |
+
   * Note for the reader: I designed this model after the plain models had not met the criterion on the test days, so
     the test days are not a clean one-shot for it.
-* **What I understand.** **[to be filled]**
+* **What I understand.** The cap is the structure of these prices in the second half of the window, and a model that
+  forecasts it separately gives a clear gain over models that average over it, in the error and in the interval score. It
+  does not improve the squared error, and it is not better than the plain models on blocks that do not settle at the
+  cap, so the gain is on cap blocks. What I tried to improve it did not help (recency weights, recalibration), and
+  the cap-history inputs given to a plain model did not replace it, which supports keeping the two stages. The intervals
+  are usable but not exact: the 50 percent interval is too wide, and the 90 percent interval is too narrow on the blocks
+  below the cap. I would not claim that the model holds in a year with a different cap pattern.
 
 ### 2.8 Engineering
 
@@ -388,7 +642,7 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   contains data.
 * **What I found.**
   * **Fresh clone.** The install from the lock file works, the linter, the formatter and the type checker report
-    nothing, and 156 tests pass with 96 percent line coverage, after the data pipeline has run. The pipeline rebuilds
+    nothing, and 158 tests pass with 96 percent line coverage, after the data pipeline has run. The pipeline rebuilds
     `reports/data_quality.json` identically, and the five notebooks run.
   * **One definition of the model.** The fit and predict steps of the two-stage model are public functions, and the
     backtest uses the same ones as the daily command line, so there is one implementation of the model.
@@ -407,21 +661,38 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     The image was 4.62 GB because it held every benchmark library and the cache of downloaded files. Keeping those out
     of it, and loading CatBoost, XGBoost and statsmodels only where the benchmark uses them, makes it 1.2 GB. In the
     smaller image the command line and the app start, and the app answers on this computer's address only.
-  * **What I have not done.** I have not forecast a day after the last day in the data. A script
-    (`scripts/new_days_check.py`) runs the daily loop over such days and scores it; run over the last ten days of the
-    data, it reproduces the backtest forecasts exactly (largest difference 0.0 on 960 blocks), so it is ready for new
-    days. The continuous integration step that builds the image has run on GitHub and passed. The workflow that
-    publishes the image on a version tag has not run; it can be started by hand without publishing.
+  * **New days.** A script (`scripts/new_days_check.py`) runs the daily loop over days and scores it: for each day it
+    fits the model on the days before it, forecasts the day with the margins of the calibration table, and then adds the
+    day to the table once its prices are known, as the commands `fit`, `forecast` and `settle` do. Run over the last
+    ten days of the window, it reproduces the backtest forecasts exactly (largest difference 0.0 on 960 blocks). Run
+    over the 22 days after the window (1 to 22 Nov 2026), which neither the model nor its settings had seen, it gives a
+    mean absolute error of 650.8 against 901.9 for yesterday's price over 2112 blocks (27.8 percent lower, better on 15
+    of the 22 days, one-sided Diebold-Mariano p = 0.0074). The 50 and 90 percent intervals hold 55.4 and 94.1 percent
+    of the prices. Only 7.3 percent of these blocks settle at the cap, against 46.6 percent on the test days; the model
+    calls 8.1 percent of them, and the F1 of calling the cap is 0.765 against 0.923 on the test days. The error on cap
+    blocks is 823.0 against 1299.4 for yesterday's price, and on the other blocks 637.1 against 870.4.
+  * **What I have not done.** The continuous integration step that builds the image has run on GitHub and passed. The
+    workflow that publishes the image on a version tag has not run; it can be started by hand without publishing.
 * **What I understand.** The model I evaluated is the model the command line runs, and the saved files reproduce its
   backtest forecasts on the days I checked, which is what I needed before trusting the daily loop. It is still a check
-  of the past: whether the loop holds up on a day that comes after the data, including the margins that it learns from
-  its own earlier forecasts, can only be shown by running it on new days, and I have not. The size of the image was a
+  of the past. The 22 days after the window show that the loop runs on days it has not seen, including the margins that
+  it learns from its own earlier forecasts, and that the gain over yesterday's price holds there. They are few, and
+  they come from a month with few cap blocks, so they say little about months with many. The size of the image was a
   cost of how the dependencies were organised, not of the model: keeping the benchmark libraries out of it cut it by
   about three quarters.
 
 ## 3. Conclusion
 
-**[to be filled]** The answer to the question, in a paragraph, followed by what I would do next.
+On the 2025-26 window the same block yesterday is hard to beat: the tuned LightGBM and CatBoost models are 6 to 7
+percent better in mean absolute error and not significantly so on the 60 test days, and my two models of 2021 are
+worse. What made the difference is the exchange cap, which almost half of the test blocks hit. A two-stage model that
+first decides whether a block settles at the cap is 14.7 percent better than yesterday's price (p = 0.0021), is
+significantly better than the Phase 1 models and the plain tuned models, is the best in all five rolling folds and at
+every intraday lead, and keeps an advantage of 27.8 percent on 22 later days. So the answer to my question is yes, with
+two conditions: the forecast has to treat the cap explicitly, and the claim holds for one window of one market, with a
+model designed after its first test. Next, I would keep the daily commands running and score the frozen model on the
+days that follow, test it in a period with a different cap pattern, check the gate-closure times so that the intraday
+leads match the market, and look at how the intervals behave when the cap share changes.
 
 ## 4. Limitations
 
