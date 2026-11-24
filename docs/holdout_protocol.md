@@ -1,34 +1,40 @@
-# Test on a year the model was not designed on
+# Test on a period the model was not designed on
 
-This page was written and committed before any 2024 price was scored. It fixes what is tested and what counts as
-success, so that the result cannot be adjusted afterwards.
+This page was written and committed before any price of the test period was scored. It fixes what is tested and
+what counts as success, so that the result cannot be adjusted afterwards.
 
 ## Why
 
 I designed the final model after I had seen the 60 test days of the 2025-26 window, so those days are not a clean
-test of it (see the report and the limits page). Calendar year 2024 is a year that played no part in the design: I
-did not look at its prices, its price cap share or its demand when I chose the model, its inputs or its settings.
+test of it (see the report and the limits page). The period 4 Nov 2024 to 31 Oct 2025 played no part in the design:
+I did not look at its prices, its price cap share or its demand when I chose the model, its inputs or its settings.
+
+**A change made before anything was scored.** The first version of this page named calendar year 2024. The grid
+operator's daily reports hold the 15-minute demand and generation sheet only from 4 Nov 2024, and the model needs
+it, so the test period became 4 Nov 2024 to 31 Oct 2025. I made the change before I had scored a day or read a
+price of 2025. Nothing else on this page changed except the dates that follow from it.
 
 ## What is frozen
 
 * **The model and its settings.** The two-stage cap-aware forecast of version 0.1.0, with the settings in
   `params.yaml` as they are at the commit tagged `holdout-freeze`. The day-ahead task only.
-* **No tuning on 2024.** No setting, input, window length, threshold or code path changes after I have seen a 2024
-  score. If something breaks (a file layout the loader cannot read, for example), I fix the loader only, and I list
-  the fix in the result.
+* **No tuning on the test period.** No setting, input, window length, threshold or code path changes after I have
+  seen a score from it. If something breaks (a file layout the loader cannot read, for example), I fix the loader
+  only, and I list the fix in the result.
 * **The comparison forecasts.** The same block yesterday, the same block last week and the DAM price, scored on the
   same days.
 
 ## What is scored
 
-* **Data.** Exchange prices and bids for 1 Jan 2024 to 31 Dec 2024, and the all-India demand and generation reports
-  of the same days. Two of the demand reports (30 and 31 Dec 2024) are listed on the grid operator's site but
-  cannot be downloaded, so those two days have no demand figures. I report how many blocks that affects.
+* **Data.** Exchange prices and bids for 4 Nov 2024 to 31 Oct 2025, and the all-India demand and generation reports
+  of the same days. Two of the demand reports (30 and 31 Dec 2024, in the fitting period) are listed on the grid
+  operator's site but cannot be downloaded, so those two days have no demand figures. I report how many blocks that
+  affects.
 * **Method.** The daily loop of the command line: for each day, the model is fitted on the days before it, the day
   is forecast, and the day is added to the calibration table once its prices are known.
-* **Warm-up and scored days.** The first four months (1 Jan to 30 Apr 2024) are used for fitting only. The scored
-  days are 1 May to 31 Dec 2024. The calibration table starts empty on 1 May, so the intervals are scored from the
-  15th day on (15 May).
+* **Warm-up and scored days.** The first four months (4 Nov 2024 to 28 Feb 2025) are used for fitting only. The
+  scored days are 1 Mar to 31 Oct 2025. The calibration table starts empty on 1 Mar, so the intervals are scored
+  from the 15th day on (15 Mar).
 * **No selection of days.** Every scored day counts, including days with many blocks at the cap and days with few.
 
 ## What counts as success
@@ -47,5 +53,6 @@ of calling the cap, and the share of blocks at the cap in each month.
 ## What I will report
 
 The scores as they come out, whether or not they meet the criterion, together with the share of blocks at the
-cap in 2024, so that the reader can see how different that year is from 2025-26. If the model does not meet the
-criterion, the report and the README say so and the earlier results are described as specific to the 2025-26 year.
+cap in the scored period, so that the reader can see how different it is from 2025-26. If the model does not meet
+the criterion, the report and the README say so and the earlier results are described as specific to the 2025-26
+year.
