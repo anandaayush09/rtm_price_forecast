@@ -1,6 +1,6 @@
 # Forecasting real-time electricity prices on the Indian Energy Exchange
 
-Report on Phase 2. The figures for the 2020-21 data come from the file that belongs to the 2021 project. For the
+Report on Phase 2. The figures for the 2020-21 data come from the file that came with my first notebook. For the
 2025-26 window I publish scores and summary statistics computed from the exchange prices, not the prices or the
 exchange files (see the [data card](data_card.md) for the terms of use and what I have not asked).
 

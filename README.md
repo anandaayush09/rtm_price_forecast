@@ -9,7 +9,7 @@ Forecasting real-time market (RTM) electricity prices on the Indian Energy Excha
 
 ## Project stages
 
-* **Phase 1 - Baseline.** A 2021 notebook that forecasts one test day (19 Jan 2021) with a random forest and
+* **Phase 1 - Baseline.** My first notebook, from 2021. It forecasts one test day (19 Jan 2021) with a random forest and
   XGBoost on 111 days of 15-minute data. It is kept in [`original/`](original/) as it was, except that its
   Colab link now points to this repository. Its forecasts are in `original/results/` and its data in
   `data/raw/price_data.csv`.
@@ -147,7 +147,7 @@ The exchange files and the demand reports of 2025-26 are not included, and I do 
 content to personal, non-commercial use and do not allow copying or distributing it without permission. This
 repository holds no exchange files and no prices per block from 2025-26. It holds scores and summary statistics
 computed from them, which I have not cleared with the exchange. I have not checked the terms of the other sources. The
-2020-21 file in `data/raw/` came with the 2021 project. Read the terms of use of each source before you share a file
+2020-21 file in `data/raw/` came with my 2021 notebook. Read the terms of use of each source before you share a file
 or a table of prices.
 
 ## Citing
@@ -161,5 +161,5 @@ See [`LIMITATIONS_AND_FUTURE_SCOPE.md`](LIMITATIONS_AND_FUTURE_SCOPE.md).
 ## Licence
 
 The code of Phase 2 is under the MIT licence, see [`LICENSE`](LICENSE). The data are not covered by it: see
-`docs/data_card.md`. `original/` and `data/raw/` come with the 2021 project and are not part of what the licence
-covers.
+`docs/data_card.md`. `original/` is my 2021 notebook, kept as it was, and `data/raw/` holds exchange data. Neither is
+part of what the licence covers.

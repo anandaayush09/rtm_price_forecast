@@ -22,7 +22,7 @@ A block is 15 minutes, so a day has 96 blocks.
 * **Government of India holiday lists.** The office memoranda of the Department of Personnel and Training for
   2020, 2025 and 2026 (see `config/holidays.yaml`, which names each document). They list central government
   holidays only.
-* **The 2020-21 file.** `data/raw/price_data.csv` comes with the 2021 notebook. Its 2021 README names the IEX
+* **The 2020-21 file.** `data/raw/price_data.csv` comes with my 2021 notebook. Its README names the IEX
   website for prices and bids and the Vidyut Pravah site for demand.
 
 See Terms of use below for what I have and have not checked. The 2025-26 files are not in the repository, and no
@@ -36,7 +36,7 @@ prices per block from them are published here; the report gives scores and summa
   credited as the source. I found no separate market-data licence. I do not read the terms as permitting a public
   repository to hold files or tables of exchange prices, so I publish none for 2025-26. I do publish scores and
   summary statistics computed from the prices, and I have not asked the exchange whether that is allowed. I do not
-  know whether the 2020-21 file that came with the 2021 project may stay here. Everything else here is my own code, tests and
+  know whether the 2020-21 file that came with my 2021 notebook may stay here. Everything else here is my own code, tests and
   descriptions.
 * **Grid-India and the holiday lists.** I have not checked the terms of the daily power supply position reports or of
   the government holiday memoranda.
