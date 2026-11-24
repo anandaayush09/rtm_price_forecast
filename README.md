@@ -71,8 +71,13 @@ that of the same block yesterday. Almost half of these blocks (46.6 percent) set
 
 The final model is 14.7 percent below yesterday's price (p = 0.0021) and is the best in all five rolling folds. I
 designed it after the plain models had not met my success criterion on these days, so the test days are not a clean
-test for it. On 22 days after the window (1 to 22 Nov 2026) it scored 650.8 against 901.9 for yesterday's price. The
-report has all models, the intraday and interval results, and the limits.
+test for it. On 22 days after the window (1 to 22 Nov 2026) it scored 650.8 against 901.9 for yesterday's price.
+
+To remove that doubt I wrote down a test plan ([`docs/holdout_protocol.md`](docs/holdout_protocol.md)), froze the
+model and scored it once on 245 days that played no part in the design (1 Mar to 31 Oct 2025, only 8.8 percent of the
+blocks at the cap). Its mean absolute error was 817.5, against 1011.1 for yesterday's price (19.1 percent lower,
+p < 0.0001) and 981.1 for the DAM price, and it was better than yesterday's price in all 8 months. The report has all
+models, the intraday and interval results, and the limits.
 
 ## How it fits together
 

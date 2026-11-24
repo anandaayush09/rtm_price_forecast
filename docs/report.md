@@ -22,9 +22,15 @@ significantly below both Phase 1 models, it is in the 90 percent model confidenc
 five rolling folds. On 22 days after the window (1 to 22 Nov 2026), forecast one day at a time as the daily commands do,
 it scored 650.8 against 901.9 for yesterday.
 
-**What it does not show.** I designed the two-stage model after the plain models had missed the criterion on the
-test days, so those days are not a clean test for it, and the 22 new days are a short check, in a month when only
-7.3 percent of blocks settled at the cap. One window of one market says little about other years. The tests have little
+**A test on days it was not designed on.** I designed the two-stage model after the plain models had missed the
+criterion on the test days, so I fixed a plan in writing and tested the frozen model once on a period I had not
+looked at, 1 Mar to 31 Oct 2025 (245 days). Its mean absolute error was 817.5, against 1011.1 for the same block
+yesterday (19.1 percent lower, p < 0.0001) and 981.1 for the DAM price. It beat yesterday's price in all 8 months, in
+a period where only 8.8 percent of the blocks settle at the cap.
+
+**What it does not show.** The settings of the model were chosen on the 2025-26 days, which come after this period, so
+the last test is of the design on other days, not a forecast made ahead of time. The 22 new days are a short check,
+in a month when only 7.3 percent of blocks settled at the cap. Two periods of one market say little about other markets. The tests have little
 power with 60 days. I did not model costs or bidding, so a better forecast is not a trading result.
 
 ## 1. Question and setup
@@ -683,6 +689,60 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
   cost of how the dependencies were organised, not of the model: keeping the benchmark libraries out of it cut it by
   about three quarters.
 
+### 2.9 A test on a period the model was not designed on
+
+* **Why.** I designed the final model after I had seen the 60 test days of the 2025-26 window, so those days are not
+  a clean test of it. I wanted days that played no part in any choice.
+* **What I did.** I wrote the plan down first ([`holdout_protocol.md`](holdout_protocol.md)): the model and its
+  settings frozen at version 0.1.0, no tuning, the scored period, and three conditions for success. I committed it
+  and pushed it with the tag `holdout-freeze` before I read a single price of the period. The first version named the
+  year 2024. The grid operator's daily reports hold the 15-minute demand and generation sheet only from 4 Nov 2024,
+  and the model needs it, so I moved the period to 4 Nov 2024 to 31 Oct 2025 before scoring anything, and the plan
+  says so. The first four months (until 28 Feb 2025) only fit the model. The scored days are 1 Mar to 31 Oct 2025,
+  245 days. For each day the model is fitted on the days before it and forecasts that day, as the daily commands do
+  ([`scripts/holdout_check.py`](../scripts/holdout_check.py)). I ran it once.
+* **Changes to the code.** I changed the loaders only, and no model, input or setting: the monthly exchange files
+  label the day they share differently (prices and volumes are identical), the older demand reports write their
+  headers differently, one report lists two readings twice with the same values, and four reports have an empty
+  reading sheet. Each change has a test. The data have 12 missing RTM blocks, and 424 blocks without demand figures
+  in the scored months (a day in each of June to September, about a third of 2 Oct 2025, and a few blocks in March to May).
+* **Result.** Mean absolute error on the 245 days, in INR/MWh (23510 blocks that have every forecast and a price):
+
+    | Forecast | Mean absolute error | Final model against it (Diebold-Mariano, one-sided) |
+    |---|---|---|
+    | Final model | 817.5 | |
+    | Same block yesterday | 1011.1 | statistic -8.44, p < 0.0001 |
+    | DAM price | 981.1 | statistic -6.77, p < 0.0001 |
+    | Same block last week | 1400.0 | statistic -12.32, p < 0.0001 |
+
+    The final model is 19.1 percent below yesterday's price and 16.7 percent below the DAM price. It beats yesterday's
+    price in all 8 months, and all three conditions of the plan are met.
+
+    | Month | Final model | Yesterday | DAM price | Last week | Share of blocks at the cap |
+    |---|---|---|---|---|---|
+    | Mar 2025 | 683.9 | 868.5 | 790.2 | 1094.0 | 0.071 |
+    | Apr 2025 | 1202.1 | 1312.4 | 1276.1 | 1813.5 | 0.175 |
+    | May 2025 | 986.9 | 1163.1 | 1265.8 | 1800.0 | 0.070 |
+    | Jun 2025 | 770.8 | 975.7 | 964.6 | 1829.0 | 0.107 |
+    | Jul 2025 | 820.9 | 1108.8 | 998.6 | 1260.9 | 0.088 |
+    | Aug 2025 | 815.2 | 1047.8 | 962.1 | 1220.7 | 0.089 |
+    | Sep 2025 | 660.5 | 868.0 | 865.6 | 1192.5 | 0.072 |
+    | Oct 2025 | 605.5 | 749.6 | 731.6 | 1010.6 | 0.033 |
+
+* **What the period is like.** Only 8.8 percent of its blocks settle at the cap, against 46.6 percent on the 2025-26
+  test days, so it is a different market state, and the gain does not depend on the cap being common. The model calls
+  the cap less well here (F1 0.648, against 0.923 on the 2025-26 test days), which is expected when it is rare. The
+  intervals behave better than before: 53.0 percent of the published prices fall inside the 50 percent interval and
+  90.4 percent inside the 90 percent interval (231 days with corrected intervals, the first 14 days have none).
+* **What it does not show.** The settings of the model were chosen on the 2025-26 days, which come after this period,
+  so it is a test of the design on other days, not a forecast made ahead of time. I did not run the plain tuned
+  models or the Phase 1 models on it, so it does not repeat the full comparison. It is one period of one market, and
+  the demand reports have gaps. The test of days that come after the window is the daily loop, which I keep running.
+* **What I understand.** The result removes my main doubt, that the gain came from tuning the model to the 60 test
+  days. The same model, with the same settings, beats yesterday's price and the DAM price in every month of a period
+  that I had not looked at, with and without many cap blocks. I still would not claim it for another market or for
+  a future with a very different cap pattern.
+
 ## 3. Conclusion
 
 On the 2025-26 window the same block yesterday is hard to beat: the tuned LightGBM and CatBoost models are 6 to 7
@@ -690,11 +750,14 @@ percent better in mean absolute error and not significantly so on the 60 test da
 worse. What made the difference is the exchange cap, which almost half of the test blocks hit. A two-stage model that
 first decides whether a block settles at the cap is 14.7 percent better than yesterday's price (p = 0.0021), is
 significantly better than the Phase 1 models and the plain tuned models, is the best in all five rolling folds and at
-every intraday lead, and keeps an advantage of 27.8 percent on 22 later days. So the answer to my question is yes, with
-two conditions: the forecast has to treat the cap explicitly, and the claim holds for one window of one market, with a
-model designed after its first test. Next, I would keep the daily commands running and score the frozen model on the
-days that follow, test it in a period with a different cap pattern, check the gate-closure times so that the intraday
-leads match the market, and look at how the intervals behave when the cap share changes.
+every intraday lead, and keeps an advantage of 27.8 percent on 22 later days. Because the model was designed after its
+first test, I wrote down a plan and scored it once on a period that played no part in the design (1 Mar to 31 Oct
+2025, with few cap blocks): it is 19.1 percent better than yesterday's price and 16.7 percent better than the DAM price,
+and better than yesterday's price in every month. So the answer to my question is yes, with two conditions: the
+forecast has to treat the cap explicitly, and the claim holds for one market, on a design that was chosen on one year.
+Next, I would keep the daily commands running and score the frozen model on the days that follow, repeat the full
+comparison on the earlier period, check the gate-closure times so that the intraday leads match the market, and look
+at how the intervals behave when the cap share changes.
 
 ## 4. Limitations
 

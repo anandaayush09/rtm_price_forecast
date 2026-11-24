@@ -56,3 +56,12 @@ The scores as they come out, whether or not they meet the criterion, together wi
 cap in the scored period, so that the reader can see how different it is from 2025-26. If the model does not meet
 the criterion, the report and the README say so and the earlier results are described as specific to the 2025-26
 year.
+
+## Result
+
+I ran the plan once, on 245 scored days (1 Mar to 31 Oct 2025). All three conditions are met: the mean absolute
+error of the final model is 817.5, against 1011.1 for the same block yesterday (Diebold-Mariano p below 0.0001) and
+981.1 for the DAM price, and it is lower than yesterday's in all 8 months. The full tables are in section 2.9 of the
+[report](report.md). Only the loaders changed between the freeze and the run (monthly exports that label the shared
+day differently, older demand report headers, one report with two repeated readings, empty reading sheets), each with
+a test.
