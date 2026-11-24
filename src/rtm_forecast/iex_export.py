@@ -114,10 +114,22 @@ def parse_snapshot(raw: pd.DataFrame, market: Market) -> pd.DataFrame:
 
 
 def combine(tables: list[pd.DataFrame]) -> pd.DataFrame:
-    """Stack several exports. A block present twice must be identical; a conflict stops the load."""
+    """Stack several exports. A block present twice must hold the same market values.
+
+    A conflict in a price, a bid or a volume stops the load. The hour and the session number are
+    only labels of the block: when two files label the same block differently (the monthly exports
+    of 2024 do this on the day they share), the row whose labels follow from the block number
+    is kept.
+    """
     stacked = pd.concat(tables, ignore_index=True)
     key = ["date", "block"]
-    distinct = stacked.drop_duplicates()
+    labels = [name for name in ("hour", "session_id") if name in stacked.columns]
+    values = [name for name in stacked.columns if name not in labels]
+    follows_block = stacked["hour"] == (stacked["block"] - 1) // 4 + 1
+    if "session_id" in labels:
+        follows_block &= stacked["session_id"] == (stacked["block"] - 1) // 2 + 1
+    ordered = stacked.assign(_ok=follows_block).sort_values("_ok", ascending=False, kind="stable")
+    distinct = ordered.drop_duplicates(subset=values).drop(columns="_ok")
     if distinct.duplicated(key).any():
         clash = distinct[distinct.duplicated(key, keep=False)].sort_values(key)
         raise ValueError(f"the same block has different values in two files:\n{clash.head(6)}")

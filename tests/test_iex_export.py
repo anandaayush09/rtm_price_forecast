@@ -141,6 +141,22 @@ def test_combine_drops_identical_overlap_and_rejects_conflict() -> None:
         combine([first, changed])
 
 
+def test_combine_keeps_the_row_whose_labels_follow_from_the_block() -> None:
+    first = parse_snapshot(sheet(blocks=range(1, 61)), "rtm")
+    second = parse_snapshot(sheet(blocks=range(41, 97)), "rtm")
+    for table in (first, second):
+        table["hour"] = (table["block"] - 1) // 4 + 1
+        table["session_id"] = (table["block"] - 1) // 2 + 1
+    shifted = first.copy()
+    late = shifted["block"] >= 41
+    shifted.loc[late, "hour"] = 24
+    shifted.loc[late, "session_id"] = 48
+    combined = combine([shifted, second])
+    assert len(combined) == 96
+    assert (combined["hour"] == (combined["block"] - 1) // 4 + 1).all()
+    assert (combined["session_id"] == (combined["block"] - 1) // 2 + 1).all()
+
+
 def test_missing_blocks_reports_short_days() -> None:
     table = parse_snapshot(sheet(blocks=range(1, 77)), "rtm")
     assert missing_blocks(table).to_dict("records") == [{"blocks": 76, "absent": 20}]
