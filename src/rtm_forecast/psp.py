@@ -33,9 +33,11 @@ HEADER_TO_NAME = {
     "NET DEMAND MET": "net_demand_met",
     "TOTAL GENERATION": "total_generation",
     "NET TRANSNATIONAL EXCHANGE": "net_exchange",
+    # The reports of 2024 and early 2025 spell it this way.
+    "NET TRANSANATIONAL EXCHANGE": "net_exchange",
 }
 REQUIRED = set(HEADER_TO_NAME.values()) - {"storage_demand", "storage_generation"}
-VALUE_COLUMNS = [name for name in HEADER_TO_NAME.values() if name != "time"]
+VALUE_COLUMNS = [name for name in dict.fromkeys(HEADER_TO_NAME.values()) if name != "time"]
 TIME_PATTERN = re.compile(r"^\d{1,2}:\d{2}$")
 REPORT_DATE_PATTERN = re.compile(r"\d{2}-[A-Za-z]{3}-\d{4}")
 FILE_DATE_PATTERN = re.compile(r"^(\d{2})\.(\d{2})\.(\d{2})_")
@@ -50,15 +52,18 @@ def read_sheet(path: Path) -> pd.DataFrame:
 
 
 def _header_name(cell: object) -> str:
-    """The words of a header cell up to its unit line, upper case, letters and spaces only."""
+    """The words of a header cell up to its unit, upper case, letters and spaces only.
+
+    The unit is in brackets, on its own line or after the words on the same line.
+    """
     if not isinstance(cell, str):
         return ""
     words: list[str] = []
     for line in cell.split("\n"):
         line = line.strip()
-        if line.startswith("("):
+        words.append(re.sub(r"[^A-Z ]", "", line.split("(")[0].upper()).strip())
+        if "(" in line:
             break
-        words.append(re.sub(r"[^A-Z ]", "", line.upper()).strip())
     return re.sub(r"\s+", " ", " ".join(words)).strip()
 
 
@@ -90,6 +95,8 @@ def parse_timeseries(raw: pd.DataFrame) -> pd.DataFrame:
     keep = [i for i, n in enumerate(names) if n]
     rows = raw.iloc[header + 1 :]
     rows = rows[rows.iloc[:, 0].astype("string").str.match(TIME_PATTERN).fillna(False)]
+    # A report of 16 Nov 2024 lists two readings twice with the same values: keep one of each.
+    rows = rows.drop_duplicates()
     empty = [i for i, n in enumerate(names) if not n]
     if empty and rows.iloc[:, empty].notna().any().any():
         raise SchemaDriftError("a column without a header holds values")
@@ -131,6 +138,8 @@ def load_folder(root: Path) -> pd.DataFrame:
     days = []
     for path in files:
         table = parse_timeseries(read_sheet(path))
+        if table.empty:
+            continue  # a report whose reading sheet is empty: the day has no demand figures
         name = FILE_DATE_PATTERN.match(path.name)
         if name is None:
             raise SchemaDriftError(f"file name {path.name!r} does not start with dd.mm.yy_")

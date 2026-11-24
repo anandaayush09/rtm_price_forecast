@@ -10,6 +10,7 @@ from rtm_forecast.config import DataParams
 from rtm_forecast.contracts import psp_schema
 from rtm_forecast.psp import (
     SchemaDriftError,
+    _header_name,
     load_folder,
     parse_timeseries,
     read_sheet,
@@ -141,6 +142,14 @@ def test_every_known_layout_parses(layout: int) -> None:
     assert table["storage_demand"].notna().all() == (layout == 3)
 
 
+def test_headers_of_2024_write_the_unit_on_the_same_line() -> None:
+    assert _header_name("FREQUENCY(Hz)") == "FREQUENCY"
+    assert _header_name("NUCLEAR (MW)") == "NUCLEAR"
+    assert _header_name("HYDRO**\n(MW)") == "HYDRO"
+    name = _header_name("Net Transanational Exchange(MW)\n(Import:+ve,Export:-ve)")
+    assert name == "NET TRANSANATIONAL EXCHANGE"
+
+
 def test_a_missing_reading_stays_absent() -> None:
     table = parse_timeseries(sheet(skip=("12:15",)))
     assert len(table) == 95 and 50 not in table["block"].tolist()
@@ -168,9 +177,12 @@ def test_off_grid_time_text_value_and_extra_readings_are_rejected() -> None:
     text.iloc[10, 2] = "n/a"
     with pytest.raises(ValueError):
         parse_timeseries(text)
-    twice = pd.concat([sheet(), sheet().iloc[[10]]], ignore_index=True)
+    same = pd.concat([sheet(), sheet().iloc[[10]]], ignore_index=True)
+    assert len(parse_timeseries(same)) == 96
+    changed = same.copy()
+    changed.iloc[-1, 2] = "123456.0"
     with pytest.raises(SchemaDriftError, match="at most"):
-        parse_timeseries(twice)
+        parse_timeseries(changed)
 
 
 def test_no_report_date_or_no_header_is_drift() -> None:
