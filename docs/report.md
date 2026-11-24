@@ -26,7 +26,9 @@ it scored 650.8 against 901.9 for yesterday.
 criterion on the test days, so I fixed a plan in writing and tested the frozen model once on a period I had not
 looked at, 1 Mar to 31 Oct 2025 (245 days). Its mean absolute error was 817.5, against 1011.1 for the same block
 yesterday (19.1 percent lower, p < 0.0001) and 981.1 for the DAM price. It beat yesterday's price in all 8 months, in
-a period where only 8.8 percent of the blocks settle at the cap.
+a period where only 8.8 percent of the blocks settle at the cap. Run on the same days, tuned CatBoost is nearly as
+good (825.0) and not significantly worse (p = 0.189), and the other models are worse, so the structure of the
+final model matters mainly when the cap is common.
 
 **What it does not show.** The settings of the model were chosen on the 2025-26 days, which come after this period, so
 the last test is of the design on other days, not a forecast made ahead of time. The 22 new days are a short check,
@@ -729,19 +731,44 @@ Each step has four parts: why I did it, what I did, what I found, and what I und
     | Sep 2025 | 660.5 | 868.0 | 865.6 | 1192.5 | 0.072 |
     | Oct 2025 | 605.5 | 749.6 | 731.6 | 1010.6 | 0.033 |
 
+* **The other models on the same days.** After I had seen this result, I also ran the tuned LightGBM and CatBoost
+  models and the two Phase 1 models on the same 245 days, with the inputs and settings chosen on the 2025-26 window and
+  refitted every day ([`scripts/holdout_comparison.py`](../scripts/holdout_comparison.py)). This was not in the plan, so
+  read it as an addition:
+
+    | Forecast | Mean absolute error | Error relative to yesterday | Final model against it (p, one-sided) |
+    |---|---|---|---|
+    | Final model | 817.5 | 0.809 | |
+    | CatBoost | 825.0 | 0.816 | 0.189 |
+    | LightGBM | 840.0 | 0.831 | 0.0035 |
+    | XGBoost (Phase 1) | 865.8 | 0.856 | < 0.0001 |
+    | Random forest (Phase 1) | 877.9 | 0.868 | < 0.0001 |
+    | DAM price | 981.1 | 0.970 | < 0.0001 |
+    | Same block yesterday | 1011.1 | 1.000 | < 0.0001 |
+
+    The final model has the lowest error overall and is in the 90 percent model confidence set, but CatBoost is in
+    the set too, and the difference between them (1 percent) is not significant. The final model has the lowest error
+    in 5 of the 8 months. CatBoost is lower in April, May and September, and LightGBM and the other models are lower
+    in some of them by small margins. The Phase 1 models, yesterday's price, the DAM price and LightGBM are outside the set.
+    Here tuned CatBoost and LightGBM beat yesterday's price by 18 and 17 percent (p < 0.0001 for both), so in this period
+    with few cap blocks the plain models would also have met the first condition of the plan.
 * **What the period is like.** Only 8.8 percent of its blocks settle at the cap, against 46.6 percent on the 2025-26
   test days, so it is a different market state, and the gain does not depend on the cap being common. The model calls
   the cap less well here (F1 0.648, against 0.923 on the 2025-26 test days), which is expected when it is rare. The
   intervals behave better than before: 53.0 percent of the published prices fall inside the 50 percent interval and
   90.4 percent inside the 90 percent interval (231 days with corrected intervals, the first 14 days have none).
 * **What it does not show.** The settings of the model were chosen on the 2025-26 days, which come after this period,
-  so it is a test of the design on other days, not a forecast made ahead of time. I did not run the plain tuned
-  models or the Phase 1 models on it, so it does not repeat the full comparison. It is one period of one market, and
-  the demand reports have gaps. The test of days that come after the window is the daily loop, which I keep running.
-* **What I understand.** The result removes my main doubt, that the gain came from tuning the model to the 60 test
-  days. The same model, with the same settings, beats yesterday's price and the DAM price in every month of a period
-  that I had not looked at, with and without many cap blocks. I still would not claim it for another market or for
-  a future with a very different cap pattern.
+  so it is a test of the design on other days, not a forecast made ahead of time. It does not show that the two-stage
+  structure is needed: with few cap blocks, the plain CatBoost model is almost as good. The comparison with the other
+  models was added after the result and covers only the models named above, without the pretrained or neural ones. The
+  holiday list does not cover 2024, so the fitting days of Nov and Dec 2024 have no holiday inputs. It is one period of
+  one market, and the demand reports have gaps. The test of days that come after the window is the daily loop, which I keep running.
+* **What I understand.** The result removes my main doubt, that the gain over yesterday's price came from tuning the
+  model to the 60 test days: the same model, with the same settings, beats yesterday's price and the DAM price in every
+  month of a period that I had not looked at. It also qualifies my main claim. The advantage of the two-stage structure
+  over a well-tuned plain model is large when the cap is common (2025-26 test days) and small and not significant when
+  it is rare (this period), which fits the reason I built it. I would not claim it for another market or for a future
+  with a very different cap pattern.
 
 ## 3. Conclusion
 
@@ -753,7 +780,7 @@ significantly better than the Phase 1 models and the plain tuned models, is the 
 every intraday lead, and keeps an advantage of 27.8 percent on 22 later days. Because the model was designed after its
 first test, I wrote down a plan and scored it once on a period that played no part in the design (1 Mar to 31 Oct
 2025, with few cap blocks): it is 19.1 percent better than yesterday's price and 16.7 percent better than the DAM price,
-and better than yesterday's price in every month. So the answer to my question is yes, with two conditions: the
+and better than yesterday's price in every month, although a plain tuned CatBoost model is nearly as good there. So the answer to my question is yes, with two conditions: the
 forecast has to treat the cap explicitly, and the claim holds for one market, on a design that was chosen on one year.
 Next, I would keep the daily commands running and score the frozen model on the days that follow, repeat the full
 comparison on the earlier period, check the gate-closure times so that the intraday leads match the market, and look

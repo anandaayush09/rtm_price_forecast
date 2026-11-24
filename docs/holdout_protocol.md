@@ -65,3 +65,8 @@ error of the final model is 817.5, against 1011.1 for the same block yesterday (
 [report](report.md). Only the loaders changed between the freeze and the run (monthly exports that label the shared
 day differently, older demand report headers, one report with two repeated readings, empty reading sheets), each with
 a test.
+
+After seeing this result I added a comparison, which was not part of the plan: the tuned LightGBM and CatBoost models and
+the two Phase 1 models on the same days, with the settings chosen on the 2025-26 window. The final model has the lowest
+error (817.5 against 825.0 for CatBoost, 840.0 for LightGBM, 865.8 and 877.9 for the Phase 1 models), but its advantage
+over CatBoost is not significant (p = 0.189) and both are in the 90 percent model confidence set.

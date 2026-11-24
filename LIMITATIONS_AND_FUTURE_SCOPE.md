@@ -35,8 +35,9 @@ This page lists what the work does not show, and what I would do next.
   earlier period (1 Mar to 31 Oct 2025, see `docs/holdout_protocol.md`), where it met all three conditions. That test
   has limits of its own: the model's settings were chosen on the 2025-26 days, which come after it, so it tests the
   design on other days and is not a forecast made ahead of time; only 8.8 percent of its blocks settle at the cap; the
-  demand reports of that period have gaps (424 blocks in the scored months); and I did not run the plain tuned
-  models or the Phase 1 models on it.
+  demand reports of that period have gaps (424 blocks in the scored months). I added a comparison with the tuned
+  LightGBM and CatBoost models and the Phase 1 models after the result: CatBoost is not significantly worse than the
+  final model there, so that test does not show that the two-stage structure is needed when the cap is rare.
 * **Validation scores are optimistic** for every model whose settings were tuned on those days.
 * **Intraday task.** The leads 1, 2, 4 and 8 are not tied to the exchange's gate-closure and result times, which I
   have not verified. The intraday models reuse the settings tuned for the day-ahead task. A cap-aware intraday model
@@ -74,8 +75,8 @@ This page lists what the work does not show, and what I would do next.
 * Verify the gate-closure and result times, and fix the real intraday lead.
 * Look at coverage fold by fold, and try a calibration that treats the regime of the last weeks separately.
 * Add TabPFN and Chronos-2 to the GPU notebook.
-* Run the plain tuned models and the Phase 1 models on the earlier period too, so that the full comparison is
-  repeated there.
+* Repeat the comparison of the earlier period with the pretrained and neural models, and test the final model on a
+  period with many cap blocks that it was not designed on, when one exists.
 * Keep scoring the final model on days after 31 Oct 2026. The 22 days of 1 to 22 Nov 2026 are scored (the model
   is refitted each day), but they are few and only 7.3 percent of their blocks settle at the cap. The daily commands
   already support this: each forecast is stored and settled when the prices are published.
